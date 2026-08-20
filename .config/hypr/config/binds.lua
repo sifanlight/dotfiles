@@ -10,7 +10,7 @@ local scripts      = "~/.local/bin/"
 local rofi_scripts = "~/.config/rofi/bin/"
 
 local terminal     = "ghostty"
-local file_manager = "thunar"
+local file_manager = "dolphin"
 local code         = "vscodium"
 local browser      = "helium-browser"
 
