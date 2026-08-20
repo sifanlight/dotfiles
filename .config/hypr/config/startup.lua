@@ -14,7 +14,7 @@ local startup = {
     "wl-paste --type text --watch cliphist -max-items=35 store", -- Enable clipboard for text
     "wl-paste --type image --watch cliphist -max-items=10 store", -- Enable clipboard for images
     "awww-daemon", -- Wallpapers daemon
-    "waybar", -- waybar
+    "~/.local/bin/waybar-auto --watch", -- waybar (external monitor if connected, else eDP-1)
     "swaync", -- swaync
     "/usr/lib/polkit-kde-authentication-agent-1", -- Policy manager (prompts for sudo access if app requests)
     "hypridle", -- "Idle daemon"

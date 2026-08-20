@@ -15,7 +15,7 @@ local code         = "vscodium"
 local browser      = "helium-browser"
 
 -- Amount of workspaces used, no more than 10
-local workspaces   = 5
+local workspaces   = 9
 
 -- Writing hl.ds.exec_cmd() all the time is too long, here is a shortcut
 local function run(cmd, window_rules)
@@ -143,7 +143,7 @@ hl.bind("SUPER + SHIFT + V",      toggle_rofi_script("icons"))                  
 hl.bind("SUPER + Y",              toggle_rofi(scripts .. "auto_walls rofi"))    -- Wallpapers menu
 
 -- Misc bindings 
-hl.bind("SUPER + SHIFT + SPACE",  run("killall waybar ; waybar &"))              -- Restart waybar
+hl.bind("SUPER + SHIFT + SPACE",  run_script("waybar-auto"))                     -- Restart waybar
 hl.bind("SUPER + SHIFT + Y",      run_script("themesw"))                         -- Switch between dark/light mode
 hl.bind("SUPER + MINUS",          run_script("volume -2"), {repeating = true})   -- Decrease volume by 2
 hl.bind("SUPER + EQUAL",          run_script("volume +2"), {repeating = true})   -- Increase volume by 2

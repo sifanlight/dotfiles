@@ -1,0 +1,95 @@
+#!/bin/bash
+# Runs waybar on the external monitor when one is connected, and on the
+# internal panel otherwise. Re-targets itself when monitors are hotplugged.
+#
+# waybar's "output" key is static, and it has no way to express "the external
+# one if present, else the internal one", so the bar config is rendered to a
+# runtime copy with "output" filled in, and waybar is restarted on
+# monitoradded / monitorremoved events.
+
+INTERNAL="eDP-1"
+CONFIG="$HOME/.config/waybar/config.jsonc"
+STYLE="$HOME/.config/waybar/style.css"
+RUNTIME_CONFIG="${XDG_RUNTIME_DIR:-/tmp}/waybar-auto.json"
+
+# Name of the monitor the bar should live on
+pick_output() {
+    local external
+    external=$(hyprctl monitors -j 2>/dev/null \
+                 | jq -r --arg i "$INTERNAL" '.[] | select(.name != $i) | .name' \
+                 | head -n1)
+
+    if [[ -n "$external" ]]; then
+        printf '%s' "$external"
+    else
+        printf '%s' "$INTERNAL"
+    fi
+}
+
+# config.jsonc carries // comments, so it is not valid JSON; strip them and
+# inject "output" before handing the result to waybar.
+render_config() {
+    python3 - "$CONFIG" "$RUNTIME_CONFIG" "$1" <<'PY'
+import json, re, sys
+
+src, dst, output = sys.argv[1], sys.argv[2], sys.argv[3]
+text = open(src).read()
+
+text = re.sub(r'/\*.*?\*/', '', text, flags=re.S)
+text = re.sub(r'(?m)^\s*//.*$', '', text)
+text = re.sub(r'(?<![:"\w])//(?![/"]).*$', '', text, flags=re.M)
+text = re.sub(r',(\s*[}\]])', r'\1', text)
+
+config = json.loads(text)
+config["output"] = [output]
+
+with open(dst, "w") as f:
+    json.dump(config, f, indent=4)
+PY
+}
+
+start_bar() {
+    local output
+    output=$(pick_output)
+
+    if ! render_config "$output"; then
+        # Never leave the user with no bar: fall back to the stock config
+        waybar &
+        return
+    fi
+
+    waybar -c "$RUNTIME_CONFIG" -s "$STYLE" &
+}
+
+stop_bar() {
+    pkill -x waybar 2>/dev/null
+    # give it a moment to release the layer surface
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        pgrep -x waybar >/dev/null || break
+        sleep 0.1
+    done
+}
+
+restart_bar() {
+    stop_bar
+    start_bar
+}
+
+stop_bar
+start_bar
+
+# --watch just restarts on hotplug; without it the script is a one-shot,
+# which is what SUPER+SHIFT+SPACE wants.
+if [[ "$1" != "--watch" ]]; then
+    exit 0
+fi
+
+SOCKET="${XDG_RUNTIME_DIR}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock"
+
+[[ -S "$SOCKET" ]] || exit 0
+
+socat -U - "UNIX-CONNECT:$SOCKET" 2>/dev/null | while read -r event; do
+    case "$event" in
+        monitoradded*|monitorremoved*) restart_bar ;;
+    esac
+done
