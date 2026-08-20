@@ -161,6 +161,13 @@ hl.bind("SHIFT + Print",          run_script("screenshot --select"))            
 hl.bind("CTRL + Print",           run_script("screenrec"))                       -- Screen record
 hl.bind("CTRL + SHIFT + Print",   run_script("screenrec --select"))              -- Screen record selected area
 
+-- Same four actions on SUPER + I, because this keyboard has no PrtSc key.
+-- The Print binds above are kept for keyboards that do have one.
+hl.bind("SUPER + I",                 run_script("screenshot"))                   -- Screenshot
+hl.bind("SUPER + SHIFT + I",         run_script("screenshot --select"))          -- Screenshot selected area
+hl.bind("SUPER + CTRL + I",          run_script("screenrec"))                    -- Screen record
+hl.bind("SUPER + CTRL + SHIFT + I",  run_script("screenrec --select"))           -- Screen record selected area
+
 
 -- Move focus:   SUPER + arrow keys
 -- Move windows: SUPER + CTRL + arrow keys
