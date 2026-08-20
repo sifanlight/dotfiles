@@ -11,11 +11,9 @@
 -- whole pixels, so 1.5 is clean where KDE's 1.4 would not be).
 local default_monitor = "eDP-1"
 
--- vrr = false disables Adaptive Sync on this panel only; misc.vrr stays at 2
--- so the HDMI output and games still get it. With VRR on, the refresh rate
--- follows the content, and 24/30fps video on this 120Hz eDP panel drives it
--- low enough to cause visible brightness flicker (fullscreen YouTube). The
--- external monitor is unaffected.
+-- vrr = false here is belt-and-braces only. It pins this panel's idle state,
+-- but it does NOT stop misc.vrr from enabling Adaptive Sync when a window
+-- goes fullscreen - that is why misc.vrr is 0 in options.lua. Keeping both.
 --
 -- NOTE: must be `false`, not `0`. In Lua 0 is truthy, so `vrr = 0` reads as
 -- "enable" and turns VRR on - the opposite of what is intended here.

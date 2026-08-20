@@ -154,12 +154,18 @@ hl.config({
         -- 2: unfullscreen/unmaximize
         on_focus_under_fullscreen = 1,
 
-        -- controls the VRR (Adaptive Sync) of your monitors. 
-        -- 0: off 
+        -- controls the VRR (Adaptive Sync) of your monitors.
+        -- 0: off
         -- 1: on
         -- 2: fullscreen only
         -- 3: fullscreen with video or game content type
-        vrr = 2,
+        --
+        -- Kept at 0. With 2, Adaptive Sync switched on whenever a window went
+        -- fullscreen, and 24/30fps video on the 120Hz internal panel then drove
+        -- the refresh low enough to cause visible brightness flicker.
+        -- A per-monitor `vrr = false` rule on eDP-1 does NOT prevent this:
+        -- misc.vrr still turns it on at fullscreen, so it has to be off here.
+        vrr = 0,
 
         -- Disable "App not responding" dialog
         enable_anr_dialog = false,
