@@ -1,7 +1,15 @@
 #!/bin/bash
 # Screenshot helper.
 #   screenshot            capture the whole output
-#   screenshot --select   capture a region (flameshot if present, else grim+slurp)
+#   screenshot --select   capture a region (grim + slurp)
+#   screenshot --edit     capture a region and annotate it (flameshot)
+#
+# --select deliberately uses grim+slurp rather than flameshot. flameshot's
+# overlay opens on Hyprland but returns an empty capture, and the window rule
+# for class "flameshot" forces it fullscreen, so a failure fills the screen.
+# grim/slurp are the native wlroots tools and are used by --select for that
+# reason; flameshot is still available through --edit when annotation is
+# wanted.
 
 APP_NAME="screenshot"
 
@@ -21,20 +29,30 @@ if ! mkdir -p "$DIR"; then
     exit 1
 fi
 
-if [[ "$1" == "--select" ]]; then
-    if command -v flameshot >/dev/null 2>&1; then
-        flameshot gui --path "$FILE"
-        STATUS=$?
-    else
+case "$1" in
+    --select)
         # slurp exits non-zero when the selection is cancelled
         GEOMETRY=$(slurp) || exit 0
         grim -g "$GEOMETRY" "$FILE"
         STATUS=$?
-    fi
-else
-    grim "$FILE"
-    STATUS=$?
-fi
+        ;;
+
+    --edit)
+        if ! command -v flameshot >/dev/null 2>&1; then
+            notify-send --app-name "$APP_NAME" --icon dialog-error \
+                        "Cannot annotate" "flameshot is not installed"
+            exit 1
+        fi
+
+        flameshot gui --path "$FILE"
+        STATUS=$?
+        ;;
+
+    *)
+        grim "$FILE"
+        STATUS=$?
+        ;;
+esac
 
 # A cancelled capture can exit 0 while writing nothing, so check the file too
 if [[ $STATUS -ne 0 ]] || [[ ! -s "$FILE" ]]; then
