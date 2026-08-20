@@ -1,24 +1,50 @@
 #!/bin/bash
+# Screenshot helper.
+#   screenshot            capture the whole output
+#   screenshot --select   capture a region (flameshot if present, else grim+slurp)
 
-FILE=$XDG_PICTURES_DIR/screenshots/"$(date +"%Y-%m-%d_%H-%M-%S").png"
+APP_NAME="screenshot"
+
+# $XDG_PICTURES_DIR is exported by hypr/config/env.lua from user-dirs.dirs.
+# Fall back to xdg-user-dir, then to ~/Pictures, so the script also works
+# when run from a plain shell that has no such variable.
+PICTURES="${XDG_PICTURES_DIR:-$(xdg-user-dir PICTURES 2>/dev/null)}"
+PICTURES="${PICTURES:-$HOME/Pictures}"
+
+DIR="$PICTURES/screenshots"
+FILE="$DIR/$(date +"%Y-%m-%d_%H-%M-%S").png"
+
+# grim/flameshot will not create missing parent directories
+if ! mkdir -p "$DIR"; then
+    notify-send --app-name "$APP_NAME" --icon dialog-error \
+                "Screenshot failed" "Could not create $DIR"
+    exit 1
+fi
 
 if [[ "$1" == "--select" ]]; then
-    if which flameshot >/dev/null 2>&1; then
-        flameshot gui --path $FILE
+    if command -v flameshot >/dev/null 2>&1; then
+        flameshot gui --path "$FILE"
+        STATUS=$?
     else
-        grim -g "$(slurp)" $FILE
+        # slurp exits non-zero when the selection is cancelled
+        GEOMETRY=$(slurp) || exit 0
+        grim -g "$GEOMETRY" "$FILE"
+        STATUS=$?
     fi
-
-    STATUS=$?
 else
-    grim $FILE
+    grim "$FILE"
     STATUS=$?
 fi
 
-if [[ $STATUS -eq 0 ]]; then
-    wl-copy < $FILE &
-
-    notify-send --app-name "$0" \
-                --icon "$FILE" \
-                "New screenshot" "$FILE"
+# A cancelled capture can exit 0 while writing nothing, so check the file too
+if [[ $STATUS -ne 0 ]] || [[ ! -s "$FILE" ]]; then
+    rm -f "$FILE"
+    exit "$STATUS"
 fi
+
+# Without an explicit type the PNG lands on the clipboard as text
+wl-copy --type image/png < "$FILE"
+
+notify-send --app-name "$APP_NAME" \
+            --icon "$FILE" \
+            "New screenshot" "$FILE"

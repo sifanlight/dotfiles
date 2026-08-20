@@ -1,32 +1,59 @@
 #!/bin/bash
+# Screen recorder toggle.
+#   screenrec            record the whole output
+#   screenrec --select   record a region
+# Running it again stops the current recording.
+
+APP_NAME="screenrec"
 
 if pgrep -x "wf-recorder" > /dev/null; then
-    pkill wf-recorder
-    notify-send --app-name $0 \
+    # SIGINT (not SIGTERM) lets wf-recorder finalise the container,
+    # otherwise the .mp4 is left unplayable.
+    pkill -INT -x wf-recorder
+
+    notify-send --app-name "$APP_NAME" \
                 --icon view-list-video-symbolic \
                 "Finished recording" "wf-recorder"
     exit 0
 fi
 
-FILE=$XDG_VIDEOS_DIR/'record-'"$(date +"%Y-%m-%d_%H-%M-%S")"'.mp4'
+if ! command -v wf-recorder >/dev/null 2>&1; then
+    notify-send --app-name "$APP_NAME" --icon dialog-error \
+                "Cannot record" "wf-recorder is not installed"
+    exit 1
+fi
 
+VIDEOS="${XDG_VIDEOS_DIR:-$(xdg-user-dir VIDEOS 2>/dev/null)}"
+VIDEOS="${VIDEOS:-$HOME/Videos}"
+mkdir -p "$VIDEOS" || exit 1
+
+FILE="$VIDEOS/record-$(date +"%Y-%m-%d_%H-%M-%S").mp4"
+
+# Pick a monitor source to capture desktop audio from, preferring bluetooth.
+# Note the quoting: unquoted, $MONITOR_SOURCES collapses onto one line and
+# grep then returns every source at once instead of a single name.
 MONITOR_SOURCES=$(pactl list sources | grep Name | grep '\.monitor' | cut -d' ' -f2)
-BLUEZ_SOURCE=$(echo "$MONITOR_SOURCES" | grep bluez_output)
+AUDIO_SOURCE=$(echo "$MONITOR_SOURCES" | grep -m1 bluez_output)
 
-if [[ -n "$BLUEZ_SOURCE" ]]; then
-    AUDIO_SOURCE=$BLUEZ_SOURCE
-else
-    AUDIO_SOURCE=$(echo $MONITOR_SOURCES | grep alsa_output)
+if [[ -z "$AUDIO_SOURCE" ]]; then
+    AUDIO_SOURCE=$(echo "$MONITOR_SOURCES" | grep -m1 alsa_output)
 fi
 
-if [[ "$1" == "--select" ]]; then 
-    AREA='-g '"$(slurp)"
-else 
-    AREA=''
+# Build argv as an array; the old '-g 100,100 200x200' string was passed to
+# wf-recorder as a single argument, and an empty "" when not selecting.
+ARGS=(-D --file "$FILE" -c libx264rgb)
+
+if [[ -n "$AUDIO_SOURCE" ]]; then
+    ARGS+=(--audio="$AUDIO_SOURCE")
 fi
 
-notify-send --app-name $0 \
+if [[ "$1" == "--select" ]]; then
+    GEOMETRY=$(slurp) || exit 0
+    ARGS+=(-g "$GEOMETRY")
+fi
+
+notify-send --app-name "$APP_NAME" \
             --icon view-list-video-symbolic \
             "Recording..." "wf-recorder"
 
-wf-recorder "$AREA" --audio="$AUDIO_SOURCE" -D --file $FILE -c libx264rgb
+wf-recorder "${ARGS[@]}"

@@ -73,8 +73,29 @@ hl.env("XDG_DATA_HOME",   XDG_DATA_HOME)
 hl.env("XDG_CONFIG_HOME", XDG_CONFIG_HOME)
 hl.env("XDG_CACHE_HOME",  XDG_CACHE_HOME)
 
--- NOTE: XDG *user* directories are intentionally NOT overridden here.
--- They are owned by ~/.config/user-dirs.dirs (Downloads, Desktop, Documents, ...).
+-- XDG *user* directories are NOT redefined here. They are read back out of
+-- ~/.config/user-dirs.dirs and exported unchanged, so scripts that reference
+-- $XDG_PICTURES_DIR / $XDG_VIDEOS_DIR (screenshot, screenrec, ...) work while
+-- user-dirs.dirs remains the single source of truth for where things live.
+local function export_user_dirs()
+    local f = io.open(XDG_CONFIG_HOME .. "/user-dirs.dirs", "r")
+
+    if not f then
+        return
+    end
+
+    for line in f:lines() do
+        local key, value = line:match('^%s*(XDG_[%u_]+_DIR)%s*=%s*"(.-)"%s*$')
+
+        if key and value then
+            hl.env(key, (value:gsub("%$HOME", HOME)))
+        end
+    end
+
+    f:close()
+end
+
+export_user_dirs()
 
 -- Force misc apps use XDG base directories
 hl.env("GNUPGHOME",             XDG_DATA_HOME   .. "/gnupg")

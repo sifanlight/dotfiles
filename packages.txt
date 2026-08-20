@@ -58,3 +58,4 @@ gammastep
 blueman
 nm-connection-editor
 qalculate-gtk
+wf-recorder
