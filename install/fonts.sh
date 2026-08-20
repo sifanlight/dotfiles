@@ -32,5 +32,7 @@ _info "Copying fontconfig..."
 mkdir -p "$DEST/.config"
 cp -r "$SRC/.config/fontconfig" "$DEST/.config/"
 
+# A *user* fontconfig does not need root; running fc-cache as root only
+# rebuilds root's cache and needlessly prompts for a password.
 _info "Updating fonts cache..."
-echo_and_exec sudo fc-cache -fv
+echo_and_exec fc-cache -f

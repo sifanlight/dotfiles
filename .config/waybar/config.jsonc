@@ -1,9 +1,13 @@
 {
     "layer": "top",
     "position": "top",
-    "width": 1910,
+    // No hardcoded "width": the bar spans the full output width.
+    // Anchoring left+right makes waybar stretch regardless of resolution.
+    "exclusive": true,
     "height": 25,
-    "margin": "5 0",
+    "margin-top": 5,
+    "margin-left": 5,
+    "margin-right": 5,
 
     "group/left" : {
         "orientation": "horizontal",

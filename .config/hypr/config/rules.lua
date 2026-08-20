@@ -118,27 +118,28 @@ hl.window_rule({
 hl.window_rule({
     name = "Scrolling almost full width",
     match = {
-        class = "codium|vesktop|zen",
+        class = "codium|vesktop|helium-browser|Helium-browser",
     },
     
     scrolling_width = 0.95
 })
 
 hl.window_rule({
-    name = "Alacritty opacity and border",
+    name = "Ghostty border",
     match = {
-        class = "Alacritty|peaclock"
+        class = "com.mitchellh.ghostty|ghostty|peaclock"
     },
 
-    opacity = "0.9 0.8",
+    -- Deliberately fully opaque: no terminal transparency.
+    opacity = 1,
     border_size = 2,
 })
 
 hl.window_rule({
-    name = "Zen/firefox Picture in Picture",
+    name = "Browser Picture in Picture",
     match = {
         title = "Picture-in-Picture",
-        class = "^(zen)(.*)$",
+        class = "(?i)^(helium-browser|helium|zen)(.*)$",
     },
 
     size = "300 200",

@@ -9,8 +9,8 @@
 local HOME = os.getenv("HOME")
 
 hl.env("EDITOR", "nvim")
-hl.env("TERMINAL", "alacritty")
-hl.env("BROWSER", "zen")
+hl.env("TERMINAL", "ghostty")
+hl.env("BROWSER", "helium-browser")
 hl.env("SCRIPTS", HOME .. "/.local/bin")
 
 -- GPU used for hyprland
@@ -26,16 +26,21 @@ hl.env("HYPRLAND_NO_RT", "1")
 -- Wayland realted variables
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "wayland")
 hl.env("DESKTOP_SESSION", "Hyprland")
-hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
+hl.env("XCURSOR_THEME", "WhiteSur-cursors")
+hl.env("XCURSOR_SIZE", "24")
 hl.env("XDG_SESSION_TYPE", "wayland")
 
 -- Vulkan and nvidia related things
 hl.env("VKD3D_FILTER_DEVICE_NAME", "NVIDIA") -- Force nvidia for VKD3D
-hl.env("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/nvidia_icd.json") -- Vulkan was unable to find my nvidia card, this one fixed it
+-- Disabled: you have a HYBRID Intel Iris Xe + NVIDIA RTX 3050 laptop.
+-- Forcing this globally routes every Vulkan app to the dGPU (battery drain,
+-- and breaks apps that expect the iGPU). Use prime-run/DRI_PRIME per-app instead.
+-- hl.env("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/nvidia_icd.json")
 
 -- User queue suppor for amd mesa dirvers.
 -- https://www.phoronix.com/news/Mesa-25.0-AMDGPU-User-Queue
-hl.env("AMD_USERQ", "1")
+-- Disabled: no AMD GPU in this machine.
+-- hl.env("AMD_USERQ", "1")
 
 -- GTK4 apps use discrete gpu, this fixes it
 -- I've put the same into /etc/environment 
@@ -48,7 +53,7 @@ hl.env("__GL_SHADER_DISK_CACHE_SKIP_CLEANUP", "1")           -- Do not cleanup n
 
 -- Qt related environment variables
 hl.env("QT_QPA_PLATFORM", "wayland")
-hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+hl.env("QT_QPA_PLATFORMTHEME", "kde") -- follow KDE kdeglobals (Edna theme)
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 
 -- What the hell is this?
@@ -68,14 +73,8 @@ hl.env("XDG_DATA_HOME",   XDG_DATA_HOME)
 hl.env("XDG_CONFIG_HOME", XDG_CONFIG_HOME)
 hl.env("XDG_CACHE_HOME",  XDG_CACHE_HOME)
 
-hl.env("XDG_DESKTOP_DIR",     HOME .. "/wsp")                -- ~/Desktop to ~/wsp
-hl.env("XDG_DOWNLOAD_DIR",    HOME .. "/dow")                -- ~/Downloads to ~/dow
-hl.env("XDG_DOCUMENTS_DIR",   HOME .. "/doc")                -- ~/Documents to ~/doc
-hl.env("XDG_PUBLICSHARE_DIR", HOME .. "/wsp/public")         -- ~/Public to ~/wsp/public
-hl.env("XDG_MUSIC_DIR",       HOME .. "/med/music")          -- ~/Music to ~/med/music
-hl.env("XDG_PICTURES_DIR",    HOME .. "/med/pictures")       -- ~/Pictures to ~/med/pictures
-hl.env("XDG_VIDEOS_DIR",      HOME .. "/med/videos")         -- ~/Videos to ~/med/videos
-hl.env("XDG_TEMPLATES_DIR",   XDG_DATA_HOME .. "/templates") -- ~/Templates to ~/.local/share/templates
+-- NOTE: XDG *user* directories are intentionally NOT overridden here.
+-- They are owned by ~/.config/user-dirs.dirs (Downloads, Desktop, Documents, ...).
 
 -- Force misc apps use XDG base directories
 hl.env("GNUPGHOME",             XDG_DATA_HOME   .. "/gnupg")

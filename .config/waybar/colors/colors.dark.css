@@ -1,13 +1,16 @@
-/* Tokyo night dark enhanced color theme */
+/* Derived from the KDE "Edna" global theme (~/.config/kdeglobals).
+   Surfaces and accent come from the KDE color scheme; the four semantic
+   accents (red/blue/yellow/green) are kept from the original palette
+   because Edna does not define usable equivalents. */
 
-@define-color module-bg     rgba(8, 8, 11, 0.9);
+@define-color module-bg     rgba(38, 50, 56, 0.92);  /* Colors:Window BackgroundNormal */
 @define-color tooltip-bg    @module-bg;
-@define-color inactive      #787c99;
-@define-color fg            #acb0d0;
+@define-color inactive      #acb4c4;                 /* ForegroundInactive */
+@define-color fg            #edf0f2;                 /* ForegroundNormal (View) */
 @define-color workspace-fg  @fg;
-@define-color highlight     @inactive;
+@define-color highlight     #926ee4;                 /* DecorationFocus / accent */
 
 @define-color red           #f7768e;
-@define-color blue          #7aa2f7;
-@define-color yellow        #e0af68;
+@define-color blue          #1f8cec;                 /* ForegroundPositive */
+@define-color yellow        #f67400;                 /* ForegroundNeutral */
 @define-color green         #41a6b5;

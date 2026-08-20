@@ -18,7 +18,8 @@ cp -r "$SRC/.config/rofi" "$DEST/.config/"
 if rofi -h | grep -qE 'drun-(games|utils|network|media|text)'; then
     _info "Patched rofi detected, adding special modes buttons"
 
-    cat > "$DEST/rofi/bin/drun" <<'EOF'
+    mkdir -p "$DEST/.config/rofi/bin"
+    cat > "$DEST/.config/rofi/bin/drun" <<'EOF'
 rofi -theme ~/.config/rofi/themes/launcher.rasi \
      -show drun \
      -modi "drun,drun-utils,drun-games,drun-network,drun-media" \

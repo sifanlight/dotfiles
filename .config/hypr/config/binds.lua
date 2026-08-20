@@ -9,10 +9,10 @@
 local scripts      = "~/.local/bin/"
 local rofi_scripts = "~/.config/rofi/bin/"
 
-local terminal     = "alacritty"
+local terminal     = "ghostty"
 local file_manager = "thunar"
 local code         = "vscodium"
-local browser      = "zen"
+local browser      = "helium-browser"
 
 -- Amount of workspaces used, no more than 10
 local workspaces   = 5

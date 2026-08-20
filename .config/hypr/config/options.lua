@@ -12,7 +12,9 @@ hl.config({
     general = {
         gaps_in = 2,
         gaps_out = 5,
-        border_size = 0,
+        -- Visible border so the KDE accent (Edna DecorationFocus) marks
+        -- the focused window, the way the titlebar does under Plasma.
+        border_size = 2,
 
         col = {
             active_border = colors.border.active,
@@ -86,7 +88,7 @@ hl.config({
     },
 
     decoration = {
-        rounding = 15,
+        rounding = 8, -- closer to Plasma 6 window rounding
 
         dim_inactive = false,
         dim_strength = 0.12,

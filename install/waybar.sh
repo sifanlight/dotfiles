@@ -20,13 +20,16 @@ cp -r "$SRC/.config/waybar" "$DEST/.config/"
 if which powerprofilesctl >/dev/null 2>&1; then
     _info "Replacing 'custom/start' module with power-profiles-daemon ..."
     
+    # Upstream pointed at layouts/with_music.jsonc and layouts/with_window.jsonc,
+    # which do not exist in this repo, so the swap silently never happened.
+    # The module lives in config.jsonc / modules.jsonc.
     WAYBAR_FILES=(
-        "$DEST/.config/waybar/layouts/with_music.jsonc"
-        "$DEST/.config/waybar/layouts/with_window.jsonc"
+        "$DEST/.config/waybar/config.jsonc"
+        "$DEST/.config/waybar/modules.jsonc"
     )
-    
+
     for FILE in "${WAYBAR_FILES[@]}"; do
-        sed -i 's|custom/start|power-profiles-daemon|g' "$FILE"
+        [[ -f "$FILE" ]] && sed -i 's|custom/start|power-profiles-daemon|g' "$FILE"
     done
 else
     _warning "powerprofilesctl is not installed, 'custom/start' module will be used instead"

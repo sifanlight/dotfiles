@@ -48,3 +48,4 @@ noto-fonts
 noto-fonts-emoji
 ttf-cascadia-code 
 ttf-cascadia-code-nerd
+brightnessctl 

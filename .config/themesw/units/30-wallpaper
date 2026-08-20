@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WALLPAPER_LIGHT_DEF="$HOME/med/pictures/wallpapers/dragons_lake_fog_white_boat_person.jpg"
-WALLPAPER_DARK_DEF="$HOME/med/pictures/wallpapers/rain_road_tree_foggy_bush_flowers_girl_umbrela_grey_outside_mountain.jpg"
+WALLPAPER_LIGHT_DEF="$HOME/Pictures/wallpapers/dragons_lake_fog_white_boat_person.jpg"
+WALLPAPER_DARK_DEF="$HOME/Pictures/wallpapers/rain_road_tree_foggy_bush_flowers_girl_umbrela_grey_outside_mountain.jpg"
 
 WALLPAPER_LIGHT="${WALLPAPER_LIGHT:-$WALLPAPER_LIGHT_DEF}"
 WALLPAPER_DARK="${WALLPAPER_DARK:-$WALLPAPER_DARK_DEF}"

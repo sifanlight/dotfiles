@@ -45,7 +45,7 @@ configuration {
 	sorting-method: "normal";
 
 	/*---------- Misc setting ----------*/
-	terminal: "alacritty";
+	terminal: "ghostty";
 	sort: false;
 	threads: 0;
 
