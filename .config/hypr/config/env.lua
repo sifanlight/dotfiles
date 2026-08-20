@@ -13,9 +13,18 @@ hl.env("TERMINAL", "ghostty")
 hl.env("BROWSER", "helium-browser")
 hl.env("SCRIPTS", HOME .. "/.local/bin")
 
--- GPU used for hyprland
--- seems like since 0.55 it uses inegrated gpu just fine by default 
--- hl.env("AQ_DRM_DEVICES", "/dev/dri/card2:/dev/dri/card1")
+-- GPU used for hyprland.
+--
+-- IMPORTANT on this laptop: the internal panel (eDP-1) and the HDMI port are
+-- both wired to the NVIDIA RTX 3050 (PCI 0000:01:00.0). The Intel iGPU
+-- (0000:00:02.0) has only disconnected DP outputs. If Hyprland picks the
+-- Intel card it finds no connected outputs and you get a black screen, so
+-- the dGPU is named explicitly and first.
+--
+-- by-path is used rather than /dev/dri/cardN because the card numbering is
+-- not stable across boots (upstream's commented-out "card2:card1" would
+-- silently become wrong).
+hl.env("AQ_DRM_DEVICES", "/dev/dri/by-path/pci-0000:01:00.0-card:/dev/dri/by-path/pci-0000:00:02.0-card")
 
 -- Disable mgpu buffer sync?? no clue what it does. 
 -- hl.env("AQ_MGPU_NO_EXPLICIT", "1")
@@ -32,9 +41,11 @@ hl.env("XDG_SESSION_TYPE", "wayland")
 
 -- Vulkan and nvidia related things
 hl.env("VKD3D_FILTER_DEVICE_NAME", "NVIDIA") -- Force nvidia for VKD3D
--- Disabled: you have a HYBRID Intel Iris Xe + NVIDIA RTX 3050 laptop.
--- Forcing this globally routes every Vulkan app to the dGPU (battery drain,
--- and breaks apps that expect the iGPU). Use prime-run/DRI_PRIME per-app instead.
+-- Left disabled: this machine's display is already driven by the NVIDIA GPU,
+-- so Vulkan apps land on it without being forced. Hard-coding the ICD list
+-- hides the Intel device from apps that enumerate GPUs, which breaks them for
+-- no gain. (prime-run / nvidia-prime is for render-offload setups and does
+-- not apply here - the dGPU drives the panel directly.)
 -- hl.env("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/nvidia_icd.json")
 
 -- User queue suppor for amd mesa dirvers.
@@ -45,6 +56,13 @@ hl.env("VKD3D_FILTER_DEVICE_NAME", "NVIDIA") -- Force nvidia for VKD3D
 -- GTK4 apps use discrete gpu, this fixes it
 -- I've put the same into /etc/environment 
 hl.env("GSK_RENDERER", "opengl")
+
+-- Hardware video decoding. The display runs on the NVIDIA GPU, so point
+-- VA-API at libva-nvidia-driver; NVD_BACKEND=direct makes it use NVDEC
+-- directly instead of going through VDPAU. Without these, browsers fall
+-- back to CPU decoding (heat + battery drain).
+hl.env("LIBVA_DRIVER_NAME", "nvidia")
+hl.env("NVD_BACKEND", "direct")
 
 -- Nvidia cache related variables
 hl.env("__GL_SHADER_DISK_CACHE", "1")                        -- Force caching. It might not cache shaders sometimes
