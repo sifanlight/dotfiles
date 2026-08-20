@@ -54,7 +54,6 @@ brightnessctl
 wl-clipboard
 cliphist
 wl-clip-persist
-gammastep
 blueman
 nm-connection-editor
 qalculate-gtk

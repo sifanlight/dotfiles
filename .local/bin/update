@@ -48,7 +48,6 @@ i_dont_need_those=(
     "/usr/share/applications/avahi-discover.desktop"
     "/usr/share/applications/bssh.desktop"
     "/usr/share/applications/bvnc.desktop"
-    "/usr/share/applications/gammastep-indicator.desktop"
     "/usr/share/applications/kvantummanager.desktop"
 )
 

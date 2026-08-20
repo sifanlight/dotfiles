@@ -61,7 +61,6 @@ run_cmd() {
 			elif [[ "$DESKTOP_SESSION" == 'plasma' ]]; then
 				qdbus org.kde.ksmserver /KSMServer logout 0 0 0
             else
-                pkill gammastep
                 hyprctl dispatch 'hl.dsp.exit()'
 			fi
 		fi
