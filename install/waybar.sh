@@ -35,12 +35,8 @@ else
     _warning "powerprofilesctl is not installed, 'custom/start' module will be used instead"
 fi
 
-_info "Changing clock timezone..."
-
-# Change timezone in waybar clock module
-TIMEZONE=$(readlink -f /etc/localtime | sed 's|.*/zoneinfo/||')
-
-sed -i "s/\"timezone\": *\"[^\"]*\"/\"timezone\": \"${TIMEZONE//\//\\/}\"/" \
-    "$DEST/.config/waybar/modules.jsonc"
+# NOTE: the clock module deliberately has no "timezone" key, so waybar uses
+# the system local time. Nothing to patch here - a hardcoded timezone only
+# went stale whenever modules.jsonc was copied over the installed one.
 
 _done "Waybar config was successfully installed!"

@@ -157,7 +157,9 @@
     },
 
     "clock": {
-        "timezone": "America/Argentina/Buenos_Aires",
+        // No "timezone" key on purpose: waybar then uses the system local
+        // time, so the bar always follows /etc/localtime and cannot drift
+        // out of sync with the rest of the system.
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "format-alt": "{:%H:%M %d %B %Y}",
         "on-click-right": "hyprctl eval \"hl.exec_cmd('ghostty --class=peaclock -e peaclock')\"",
