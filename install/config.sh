@@ -27,15 +27,21 @@ if [[ -f "$DEST/.config/tmux/tmux.conf" ]]; then
     link_file_or_dir "$DEST/.config/tmux/tmux.conf" "$DEST/.tmux.conf"
 fi
 
-# Ensure TPM is cloned for tmux plugins
+# Ensure TPM is cloned and plugins are installed for tmux
 if [[ ! -d "$DEST/.tmux/plugins/tpm" ]]; then
     _info "Cloning Tmux Plugin Manager (TPM)..."
     git clone https://github.com/tmux-plugins/tpm "$DEST/.tmux/plugins/tpm" 2>/dev/null || true
 fi
-if [[ ! -d "$DEST/.config/tmux/plugins/tpm" ]]; then
-    mkdir -p "$DEST/.config/tmux/plugins"
-    git clone https://github.com/tmux-plugins/tpm "$DEST/.config/tmux/plugins/tpm" 2>/dev/null || true
+
+# Link ~/.tmux/plugins <-> ~/.config/tmux/plugins to keep both paths consistent
+mkdir -p "$DEST/.config/tmux/plugins"
+if [[ -x "$DEST/.tmux/plugins/tpm/bin/install_plugins" ]]; then
+    _info "Installing tmux plugins (Catppuccin, sensible, navigator, etc.)..."
+    "$DEST/.tmux/plugins/tpm/bin/install_plugins" >/dev/null 2>&1 || true
+    # Sync to ~/.config/tmux/plugins for configs referencing that path
+    cp -a "$DEST/.tmux/plugins/." "$DEST/.config/tmux/plugins/" 2>/dev/null || true
 fi
+
 
 # Install/merge .local/share applications and templates
 _info "Setting up $SRC/.local/share ..."
