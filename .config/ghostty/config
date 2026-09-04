@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  Ghostty — portable config
+#  Ported from the iTerm2 profile "Modern" (macOS), shared across machines.
+#
+#  Layout:
+#    config                  ← you are here (cross-platform settings)
+#    platform/current.conf   ← symlink to darwin.conf or linux.conf (per machine)
+#    platform/darwin.conf    ← macOS-only
+#    platform/linux.conf     ← Linux / KDE-only
+#    themes/                 ← color schemes (cross-platform)
+#
+#  Run ./install.sh on a new machine to link platform/current.conf.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Colors ────────────────────────────────────────────────────────────────
+# Follows the desktop light/dark preference on both macOS and KDE Plasma.
+# The two palettes are identical apart from the background, because the
+# original iTerm2 profile used a dark palette for light mode too.
+theme = light:iterm2-modern-light,dark:iterm2-modern-dark
+
+# ─── Font ──────────────────────────────────────────────────────────────────
+# iTerm2: "JetBrainsMonoNFM-SemiBold 14"
+# Repeated font-family lines append fallbacks, used in order if the first
+# family is missing. See README for installing the Nerd Font on Linux.
+font-family             = JetBrainsMono Nerd Font Mono
+font-family             = JetBrains Mono
+font-family             = monospace
+font-style              = SemiBold
+font-style-bold         = ExtraBold
+font-style-italic       = SemiBold Italic
+font-style-bold-italic  = ExtraBold Italic
+font-size               = 14
+
+# iTerm2 had "ASCII Ligatures" off
+font-feature = -liga
+font-feature = -calt
+font-feature = -dlig
+
+# "Use Bright Bold"
+bold-is-bright = true
+
+# ─── Cursor ────────────────────────────────────────────────────────────────
+cursor-style       = block
+cursor-style-blink = true
+
+# ─── Window ────────────────────────────────────────────────────────────────
+# iTerm2 default window size was 150 columns x 40 rows
+window-width  = 150
+window-height = 40
+
+# iTerm2 Transparency was 0 (fully opaque), so its blur setting did nothing.
+# Uncomment both for a translucent blurred window. On KDE this needs the
+# Blur desktop effect enabled (System Settings > Desktop Effects).
+# background-opacity = 0.92
+# background-blur    = 12
+
+# iTerm2 "Prompt Before Closing" was off
+confirm-close-surface = false
+
+# ─── Bell ──────────────────────────────────────────────────────────────────
+# iTerm2 used a visual bell with the audible bell left on
+bell-features = system,attention,title
+
+# ─── Quick terminal (iTerm2 "hotkey window") ───────────────────────────────
+# iTerm2 hotkey was Ctrl+Opt+Space, docked to the top of the screen.
+# Ctrl+Alt+Space is the same physical chord on a PC keyboard.
+# Linux: global: keybinds need the GlobalShortcuts desktop portal — see README.
+keybind = global:ctrl+alt+space=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-autohide = true
+
+# ─── Shell / environment ───────────────────────────────────────────────────
+# iTerm2 reported itself as xterm-256color. Ghostty defaults to xterm-ghostty,
+# which some remote hosts have no terminfo entry for.
+term = xterm-256color
+
+# ─── Per-machine overrides ─────────────────────────────────────────────────
+# NOTE: an included file is loaded *after* the file that includes it, so
+# anything in current.conf overrides the settings above. The leading ?
+# means "no error if this file doesn't exist yet".
+config-file = ?platform/current.conf

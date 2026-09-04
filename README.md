@@ -93,22 +93,35 @@ yay -S vscodium-bin zen-browser-bin peaclock kripton-theme-git tokyonight-gtk-th
 
 Altenatively, see [packages.txt](./packages.txt) and [packages.aur.txt](./packages.aur.txt), install manually the packages you think are needed
 
-Clone the repo & run the installer:
+Clone the repo & run the bootstrap script:
 
 ```sh
-git clone https://github.com/cebem1nt/dotfiles.git --depth=1
-cd dotfiles
-./install.sh # DO NOT run as super user!
+git clone <your-repo-url> ~/dotfiles
+cd ~/dotfiles
+./bootstrap.sh
 ```
 
-Or install components separately by running scripts from `install/` directory:
+> [!TIP]
+> **Symlink-Driven Version Control**:
+> The bootstrap script symlinks your configuration files (`~/.config/*`, `~/.zshrc`, `~/.tmux.conf`, and `~/.local/bin/*`) to this repository.
+> Any changes you make in your live desktop environment are immediately reflected in Git, making version control effortless:
+> ```sh
+> cd ~/dotfiles
+> git status
+> git commit -m "Update configs"
+> git push
+> ```
 
+To only link configurations without prompting for package installation:
 ```sh
-./install/waybar.sh      # Waybar configuration
-./install/spicetify.sh   # Spotify theme
-./install/scripts.sh     # Scripts
-./install/config.sh      # "Almost all" configuration files
+./bootstrap.sh --link-only
 ```
+
+Or install components modularly using the legacy interactive installer:
+```sh
+./install.sh
+```
+
 
 ## Uninstallation
 **Your previous config files are stored in** `~/.local/old` (or `~/.local/old-N` based on N times executed the install.sh script). You can restore necessary config files manually or using `./restore.sh` script:

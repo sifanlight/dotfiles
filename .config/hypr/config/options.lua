@@ -11,10 +11,8 @@ local colors = require("config.colors") -- Dynamic color scheme for border/misc 
 hl.config({
     general = {
         gaps_in = 2,
-        gaps_out = 5,
-        -- Visible border so the KDE accent (Edna DecorationFocus) marks
-        -- the focused window, the way the titlebar does under Plasma.
-        border_size = 2,
+        gaps_out = 0,
+        border_size = 0,
 
         col = {
             active_border = colors.border.active,
@@ -78,17 +76,17 @@ hl.config({
             gradients = true,
             font_size = 14,
             height = 24,
-            gradient_rounding = 10,
+            gradient_rounding = 0,
             text_color = colors.group.text,
 
             indicator_height = 0,
-            indicator_gap = 2,
+            indicator_gap = 0,
             keep_upper_gap = false,
         }
     },
 
     decoration = {
-        rounding = 8, -- closer to Plasma 6 window rounding
+        rounding = 0,
 
         dim_inactive = false,
         dim_strength = 0.12,
@@ -104,9 +102,21 @@ hl.config({
     },
 
     input = {
-        follow_mouse = 2,
-        sensitivity = -0.2,
+        -- Focus follows the mouse.
+        -- 0: cursor movement never changes focus (click to focus)
+        -- 1: focus always moves to the window under the cursor
+        -- 2: cursor focus detached from keyboard focus; a click is still
+        --    needed to move keyboard focus
+        -- 3: cursor and keyboard focus fully separate; clicking does not
+        --    move keyboard focus either
+        follow_mouse = 1,
+        sensitivity = 0.0,
         numlock_by_default = true,
+
+        -- English and Persian. "us" is first, so it is what every keyboard
+        -- comes up in at boot and after a reload.
+        -- SUPER + ALT + SPACE cycles between them, see binds.lua.
+        kb_layout = "us,ir",
 
         -- 0: disabled
         -- 1: focus will change to the window under the cursor 
@@ -180,7 +190,7 @@ hl.config({
     binds = {
         -- If enabled, an attempt to switch to the currently focused workspace 
         -- will instead switch to the previous workspace. Akin to i3's auto_back_and_forth
-        workspace_back_and_forth = true,
+        workspace_back_and_forth = false,
 
         hide_special_on_workspace_change = true,
         movefocus_cycles_fullscreen = true,

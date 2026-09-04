@@ -1,0 +1,27 @@
+[Default Applications]
+x-scheme-handler/http=helium.desktop
+x-scheme-handler/https=helium.desktop
+text/html=helium.desktop
+x-scheme-handler/mailto=helium.desktop
+x-scheme-handler/slack=slack.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+application/pdf=sioyek.desktop
+application/vnd.openxmlformats-officedocument.presentationml.presentation=libreoffice-impress.desktop
+image/png=org.kde.gwenview.desktop
+application/epub+zip=sioyek.desktop
+application/x-pdf=sioyek.desktop
+application/x-gzpdf=sioyek.desktop
+application/x-bzpdf=sioyek.desktop
+application/x-wwf=sioyek.desktop
+application/x-cbz=sioyek.desktop
+
+[Added Associations]
+application/pdf=sioyek.desktop;okularApplication_pdf.desktop;
+application/epub+zip=sioyek.desktop;okularApplication_epub.desktop;
+application/x-pdf=sioyek.desktop;
+application/x-gzpdf=sioyek.desktop;
+application/x-bzpdf=sioyek.desktop;
+application/x-wwf=sioyek.desktop;
+application/x-cbz=sioyek.desktop;
+application/vnd.openxmlformats-officedocument.presentationml.presentation=libreoffice-impress.desktop;
+image/png=org.kde.gwenview.desktop;

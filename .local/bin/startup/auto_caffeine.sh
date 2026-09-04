@@ -2,8 +2,10 @@
 
 CAFFEINE="$HOME/.local/bin/caffeine"
 
-if [[ $(powerprofilesctl get) != "power-saver" ]] ; then
+if [[ $(powerprofilesctl get) == "performance" ]] ; then
     "$CAFFEINE" --on & 
+else
+    "$CAFFEINE" --off &
 fi
 
 gdbus monitor \
@@ -16,10 +18,12 @@ while IFS= read -r line; do
 
         profile=$(printf "%s\n" "$line" | awk -F"<'|'>" '/ActiveProfile/{print $2}')
         
-        if [[ "$profile" == "power-saver" ]]; then 
-            "$CAFFEINE" --off &
-        else
-            "$CAFFEINE" --on &
+        if [[ -n "$profile" ]]; then
+            if [[ "$profile" == "performance" ]]; then 
+                "$CAFFEINE" --on &
+            else
+                "$CAFFEINE" --off &
+            fi
         fi
         ;;
     esac

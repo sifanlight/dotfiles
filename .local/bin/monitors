@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Switch monitor layouts without editing the Hyprland config.
+#
+# The profiles themselves live in ~/.config/hypr/config/monitors.lua - this
+# is just the handle. Hyprland's Lua config replaces `hyprctl keyword` with
+# `hyprctl eval`, so that is how we reach into it.
+#
+#   monitors                 rofi picker
+#   monitors extended        internal panel + externals, side by side
+#   monitors external        externals only, internal panel off
+#   monitors internal        internal panel only
+#   monitors mirror          externals mirror the internal panel
+#   monitors next            cycle to the next profile
+#   monitors rescue          force everything back onto the laptop panel
+#   monitors status          what is set, and what is actually lit
+
+set -uo pipefail
+
+STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/monitor-profile"
+THEME="$HOME/.config/rofi/themes/logout.rasi"
+
+PROFILES=(extended external internal mirror)
+
+# rofi labels, in PROFILES order
+ICONS=('󰍺' '󰍹' '󰌢' '󰑐')
+LABELS=('Extended' 'External only' 'Laptop only' 'Mirror')
+
+die() { printf '%s\n' "$*" >&2; exit 1; }
+
+eval_lua() {
+    hyprctl eval "$1" 2>&1 | grep -q '^error' && die "hyprland rejected: $1"
+    return 0
+}
+
+current() {
+    local value=''
+    [[ -r "$STATE_FILE" ]] && read -r value < "$STATE_FILE"
+    printf '%s' "${value:-extended}"
+}
+
+set_profile() {
+    local name=$1 found=0
+    for p in "${PROFILES[@]}"; do [[ $p == "$name" ]] && found=1; done
+    (( found )) || die "unknown profile '$name' (want: ${PROFILES[*]})"
+    eval_lua "MONITORS.set(\"$name\")"
+}
+
+status() {
+    printf 'profile: %s\n' "$(current)"
+    printf 'lit:\n'
+    hyprctl monitors -j 2>/dev/null \
+        | jq -r '.[] | "  \(.name)  \(.width)x\(.height)@\(.refreshRate | floor)  at \(.x)x\(.y)  scale \(.scale)"' \
+        || printf '  (hyprland not reachable)\n'
+
+    printf 'connected:\n'
+    for entry in /sys/class/drm/card*-*/status; do
+        [[ -r $entry ]] || continue
+        local dir name
+        dir=${entry%/status}; name=${dir##*/}; name=${name#card*-}
+        printf '  %-12s %s\n' "$name" "$(<"$entry")"
+    done
+}
+
+menu() {
+    command -v rofi >/dev/null || die "rofi not found; use: monitors <profile>"
+
+    local marker cur entries=() i
+    cur=$(current)
+
+    for i in "${!PROFILES[@]}"; do
+        marker='  '
+        [[ ${PROFILES[$i]} == "$cur" ]] && marker='● '
+        entries+=("${ICONS[$i]}  ${marker}${LABELS[$i]}")
+    done
+
+    local choice
+    choice=$(printf '%s\n' "${entries[@]}" \
+        | rofi -dmenu -sync -p 'Monitors' \
+               -theme-str 'window {location: center; anchor: center; fullscreen: false; width: 320px;}' \
+               -theme-str 'listview {columns: 1; lines: 4;}' \
+               -theme-str 'element-text {horizontal-align: 0.0;}' \
+               -theme "$THEME") || exit 0
+
+    [[ -n $choice ]] || exit 0
+
+    for i in "${!LABELS[@]}"; do
+        [[ $choice == *"${LABELS[$i]}" ]] && { set_profile "${PROFILES[$i]}"; return; }
+    done
+}
+
+case "${1-}" in
+    '')        menu ;;
+    next)      eval_lua 'MONITORS.next()' ;;
+    rescue)    eval_lua 'MONITORS.rescue()' ;;
+    apply)     eval_lua 'MONITORS.apply()' ;;
+    status)    status ;;
+    -h|--help) awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0" ;;
+    *)         set_profile "$1" ;;
+esac

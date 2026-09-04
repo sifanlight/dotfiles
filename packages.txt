@@ -58,3 +58,12 @@ blueman
 nm-connection-editor
 qalculate-gtk
 wf-recorder
+
+# Terminal, shell, monitoring and modern tools
+tmux
+ghostty
+yazi
+btop
+wezterm
+zsh-autosuggestions
+zsh-syntax-highlighting

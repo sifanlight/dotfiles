@@ -9,7 +9,7 @@
 local scripts      = "~/.local/bin/"
 local rofi_scripts = "~/.config/rofi/bin/"
 
-local terminal     = "ghostty"
+local terminal     = "ghostty -e tmux"
 local file_manager = "dolphin"
 local code         = "vscodium"
 local browser      = "helium-browser"
@@ -141,9 +141,19 @@ hl.bind("SUPER + ESCAPE",         toggle_rofi_script("logout"))                 
 hl.bind("SUPER + SHIFT + R",      toggle_rofi_script("run"))                    -- Raw commands launcher
 hl.bind("SUPER + SHIFT + V",      toggle_rofi_script("icons"))                  -- Nerd font glyphs picker
 hl.bind("SUPER + Y",              toggle_rofi(scripts .. "auto_walls rofi"))    -- Wallpapers menu
+hl.bind("SUPER + SHIFT + M",      toggle_rofi(scripts .. "monitors"))           -- Monitor layout menu
 
 -- Misc bindings 
 hl.bind("SUPER + SHIFT + SPACE",  run_script("waybar-auto"))                     -- Restart waybar
+hl.bind("SUPER + ALT + B",        run("pkill -SIGUSR1 -x waybar"))               -- Hide / show waybar
+-- Cycles every keyboard through input.kb_layout ("us,ir"). "all" rather than
+-- the built-in name, so an external keyboard switches along with the laptop one.
+hl.bind("SUPER + ALT + SPACE",    run("hyprctl switchxkblayout all next"))      -- English <-> Persian
+hl.bind("SUPER + CTRL + M",       run_script("monitors next"))                   -- Cycle monitor layout
+-- Escape hatch: forces everything back onto the laptop panel. Keybinds keep
+-- working when the screen is dark, so this is the way out without a TTY.
+hl.bind("SUPER + CTRL + SHIFT + M", run_script("monitors rescue"))               -- Rescue: laptop panel only
+hl.bind("SUPER + CTRL + O",       run_script("oled-care toggle"))                -- Toggle OLED burn-in care
 hl.bind("SUPER + SHIFT + Y",      run_script("themesw"))                         -- Switch between dark/light mode
 hl.bind("SUPER + MINUS",          run_script("volume -2"), {repeating = true})   -- Decrease volume by 2
 hl.bind("SUPER + EQUAL",          run_script("volume +2"), {repeating = true})   -- Increase volume by 2

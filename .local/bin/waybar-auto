@@ -48,17 +48,35 @@ with open(dst, "w") as f:
 PY
 }
 
+ensure_proxy() {
+    if ! pgrep -f "hypr-ipc-proxy" >/dev/null 2>&1; then
+        "$HOME/.local/bin/hypr-ipc-proxy" &
+        for _ in 1 2 3 4 5 6 7 8 9 10; do
+            [[ -S "${XDG_RUNTIME_DIR}/hypr/proxy_${HYPRLAND_INSTANCE_SIGNATURE}/.socket.sock" ]] && break
+            sleep 0.05
+        done
+    fi
+}
+
 start_bar() {
     local output
     output=$(pick_output)
 
+    ensure_proxy
+
+    local sig="proxy_${HYPRLAND_INSTANCE_SIGNATURE}"
+    if [[ ! -S "${XDG_RUNTIME_DIR}/hypr/${sig}/.socket.sock" ]]; then
+        sig="${HYPRLAND_INSTANCE_SIGNATURE}"
+    fi
+
     if ! render_config "$output"; then
         # Never leave the user with no bar: fall back to the stock config
-        waybar &
+        HYPRLAND_INSTANCE_SIGNATURE="$sig" waybar &
         return
     fi
 
-    waybar -c "$RUNTIME_CONFIG" -s "$STYLE" &
+    HYPRLAND_INSTANCE_SIGNATURE="$sig" waybar -c "$RUNTIME_CONFIG" -s "$STYLE" &
+    disown
 }
 
 stop_bar() {

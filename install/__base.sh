@@ -30,17 +30,12 @@ echo_and_exec() {
 }
 
 ensure_backup_dir() {
-    # If running from main script, BACKUP_DIR will automatically be set
-    while [[ ! -d "$BACKUP_DIR" ]]; do
-        read -p "Enter backup directory: " BACKUP_DIR
-        BACKUP_DIR="${BACKUP_DIR/#\~/$HOME}"
-        mkdir -p "$BACKUP_DIR"
-
-        if [[ ! -d "$BACKUP_DIR" ]]; then
-            _error "Could not create directory. Try again."
-        fi
-    done
+    if [[ -z "$BACKUP_DIR" ]]; then
+        BACKUP_DIR="${DEST:-$HOME}/.local/old/dotfiles-backup-$(date +%Y%m%d_%H%M%S)"
+    fi
+    mkdir -p "$BACKUP_DIR"
 }
+
 
 prompt() {
     read -r -p "$1"$'\033[32m [Y/n] \033[0m' CHOICE
@@ -52,4 +47,28 @@ prompt() {
             y|Y|* ) echo 1;;
         esac
     fi
+}
+
+link_file_or_dir() {
+    local src="$1"
+    local dest="$2"
+    local parent
+    parent=$(dirname "$dest")
+
+    mkdir -p "$parent"
+
+    # If destination already points to src, nothing to do
+    if [[ -L "$dest" ]] && [[ "$(readlink -f "$dest")" == "$(readlink -f "$src")" ]]; then
+        return 0
+    fi
+
+    # If destination exists and is not our symlink, back it up safely
+    if [[ -e "$dest" ]] || [[ -L "$dest" ]]; then
+        ensure_backup_dir
+        local rel="${dest#$DEST/}"
+        mkdir -p "$BACKUP_DIR/$(dirname "$rel")"
+        mv "$dest" "$BACKUP_DIR/$rel"
+    fi
+
+    ln -sfn "$src" "$dest"
 }

@@ -16,19 +16,26 @@ if [[ ! -f "$SRC/.local/bin/autowalls/auto_walls.py" ]]; then
     read -r -p "Press ENTER to continue..."
 fi
 
-# NOTE: upstream did "mv ~/.local/bin -> backup", which wipes out anything
-# else living there (pipx/npm/cargo shims, the `claude` symlink, ...).
-# Back it up as a COPY and merge the dotfiles scripts on top instead, so
-# pre-existing entries survive.
-if [ -e "$DEST/.local/bin" ]; then
-    ensure_backup_dir
+mkdir -p "$DEST/.local/bin"
 
-    _info "Backing up existing $DEST/.local/bin (kept in place, not removed)..."
-    mkdir -p "$BACKUP_DIR/.local"
-    cp -a "$DEST/.local/bin" "$BACKUP_DIR/.local/bin"
+for SCRIPT_PATH in "$SRC"/.local/bin/*; do
+    NAME=$(basename "$SCRIPT_PATH")
+    [[ "$NAME" == "autowalls" ]] && continue
+    [[ "$NAME" == "README.md" ]] && continue
+
+    if [[ -f "$SCRIPT_PATH" ]]; then
+        chmod +x "$SCRIPT_PATH"
+        link_file_or_dir "$SCRIPT_PATH" "$DEST/.local/bin/$NAME"
+    elif [[ -d "$SCRIPT_PATH" ]]; then
+        link_file_or_dir "$SCRIPT_PATH" "$DEST/.local/bin/$NAME"
+    elif [[ -L "$SCRIPT_PATH" ]]; then
+        link_file_or_dir "$SCRIPT_PATH" "$DEST/.local/bin/$NAME"
+    fi
+done
+
+# Submodule autowalls directory link
+if [[ -d "$SRC/.local/bin/autowalls" ]]; then
+    link_file_or_dir "$SRC/.local/bin/autowalls" "$DEST/.local/bin/autowalls"
 fi
 
-mkdir -p "$DEST/.local/bin"
-cp -a "$SRC/.local/bin/." "$DEST/.local/bin/"
- 
-_done "Scripts were installed!"
+_done "Scripts were linked and installed!"

@@ -1,195 +1,334 @@
 @import "colors/colors.css";
 
 * {
-    font-family: 'CaskaydiaCove Nerd Font Propo';
-	border: none;
-	border-radius: 0;
-	min-height: 0;
-	margin: 0;
-	padding: 0;
-	text-shadow: none;
+    font-family: 'CaskaydiaCove Nerd Font Propo', 'JetBrainsMono Nerd Font Propo', sans-serif;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    text-shadow: none;
 }
 
-#waybar {
-    font-weight: 700;
+/* Outer Bar Window Container */
+window#waybar {
     background: transparent;
-    font-size: 14px;
-    color: @fg;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
 }
 
-/* global paddings */
-#temperature,
-#bluetooth, 
-#battery, 
-#memory,
+/* Base style for the Bar Inner Surface (Open Windows: Full height/width, flush to screen edge) */
+window#waybar > box {
+    background: @bar-bg;
+    border-right: 1px solid @border-color;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    border-radius: 0;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.45);
+    margin: 0;
+    padding: 4px 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Empty Workspace: Floating Bar with Margins and Rounded Corners */
+window#waybar.empty > box {
+    background: @bar-bg;
+    border: 1px solid @border-color;
+    border-radius: 8px;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.45);
+    margin: 6px 0 6px 5px;
+    padding: 4px 0;
+}
+
+/* Hidden hyprland/window module (used for state detection) */
+#window {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Base style for elevated tiles inside the bar */
+#custom-launcher,
+#workspaces,
+#custom-active-app,
 #mpris,
-#window,
-#cpu, 
-#load {
-    padding: 1px 7px;
-}
-
-#network, 
-#tray {
-    padding: 1px 6px;
-}
-
-#backlight,
-#pulseaudio {
-    padding: 1px 8px;
-}
-
-#pulseaudio {
-    padding-left: 4px;
-}
-
-#backlight-slider,
-#pulseaudio-slider {
-    padding: 0 7px 0 2px;
-}
-
-#workspaces, 
-#bluetooth, 
-#battery, 
-#memory, 
-#temperature, 
-#cpu,
-#mpris,
-#window,
-#load {
-    margin: 0 3px;
-} 
-
-#right, 
-#left,
-#right-hidden-top, 
-#left-hidden-top {
-    padding: 2px 10px;
-    border-radius: 15px;
-    background: @module-bg;
-}
-
-#right-hidden-top,
-#left-hidden-top {
-    padding: 0 12px;
-}
-
-#right, #left  {
-    margin: 0 8px;
-}
-
+#tray,
+#system,
+#group-system,
 #clock {
     background: @module-bg;
-    padding: 1px 18px;
-    border-radius: 15px;
+    color: @fg;
+    border-radius: 5px;
+    border: 1px solid @border-color;
+    margin: 2px 3px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#custom-ctlcenter {
-    margin-left: 7px;
+/* --- Top Modules --- */
+
+/* Launcher Pill */
+#custom-launcher {
+    min-width: 28px;
+    min-height: 28px;
+    background: rgba(34, 211, 238, 0.12);
+    color: @cyan;
+    font-size: 14px;
+    border: 1px solid rgba(34, 211, 238, 0.28);
+    border-radius: 5px;
+    margin-top: 1px;
 }
 
-#power-profiles-daemon,
-#custom-start {
-    margin-right: 7px;
+#custom-launcher:hover {
+    background: @cyan;
+    color: #10121b;
+    border-color: @cyan;
+    box-shadow: 0 0 6px rgba(34, 211, 238, 0.4);
 }
 
-#cpu.critical,
-#memory.critical, 
-#battery.critical,
-#network.disabled,
-#temperature.critical, 
-#network.disconnected,
-#power-profiles-daemon.performance {
-	color: @red;
-}
-
-#cpu.warning,
-#memory.warning, 
-#battery.warning,
-#temperature.warning {
-	color: @yellow;
-    background: unset;
-}
-
-#power-profiles-daemon.power-saver {
-    color: @green;
-}
-
-#custom-start,
-#custom-ctlcenter {
-    color: @blue;
+/* Workspaces Pill */
+#workspaces {
+    padding: 3px 1px;
+    margin-top: 1px;
 }
 
 #workspaces button {
-    color: @workspace-fg;
-    font-size: 14px;
-    border-radius: 100%;
-    padding: 0 2px;
-    margin: 0 3px;
+    background: transparent;
+    color: @fg-dim;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 3px;
+    min-width: 24px;
+    min-height: 24px;
+    margin: 1px 0;
+    padding: 0;
+    transition: all 0.2s ease;
 }
-/* 
-#workspaces button.empty:not(.active) {
-    color: @inactive;
-} */
 
 #workspaces button:hover {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+#workspaces button.active {
+    background: @highlight;
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+}
+
+#workspaces button.urgent {
+    background: @red;
+    color: #ffffff;
+    animation: blink 1s linear infinite alternate;
+}
+
+/* Focused Window App Icon Pill */
+#custom-active-app {
+    min-width: 28px;
+    min-height: 28px;
+    font-size: 14px;
+    padding: 0;
+}
+
+#custom-active-app:hover {
+    background: @module-bg-hover;
+}
+
+#custom-active-app.empty {
+    opacity: 0.4;
+}
+
+/* --- Center Modules --- */
+
+/* MPRIS Media Player (Subtle, Clean & Faded) */
+#mpris {
+    min-width: 28px;
+    padding: 10px 2px;
+    background: @module-bg;
+    color: @fg-dim;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid @border-color;
+    opacity: 0.88;
+}
+
+#mpris:hover {
+    background: @module-bg-hover;
+    color: @fg;
+    border-color: @border-active;
+    opacity: 1;
 }
 
 #mpris.paused {
     color: @inactive;
+    opacity: 0.65;
 }
 
-/* ---<==== Misc ====>--- */
+/* --- Bottom Modules --- */
+
+/* Tray Box */
+#tray {
+    padding: 4px 1px;
+    margin-bottom: 1px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: @red;
+}
+
+/* Unified System Box */
+#system,
+#group-system {
+    padding: 3px 1px;
+    margin: 2px 3px;
+}
+
+#system #pulseaudio,
+#system #network,
+#system #bluetooth,
+#system #power-profiles-daemon,
+#system #battery,
+#system #custom-notification,
+#group-system #pulseaudio,
+#group-system #network,
+#group-system #bluetooth,
+#group-system #power-profiles-daemon,
+#group-system #battery,
+#group-system #custom-notification {
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    min-width: 24px;
+    min-height: 24px;
+    margin: 1px 0;
+    padding: 0;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+
+#system #pulseaudio:hover,
+#system #network:hover,
+#system #bluetooth:hover,
+#system #power-profiles-daemon:hover,
+#system #battery:hover,
+#system #custom-notification:hover,
+#group-system #pulseaudio:hover,
+#group-system #network:hover,
+#group-system #bluetooth:hover,
+#group-system #power-profiles-daemon:hover,
+#group-system #battery:hover,
+#group-system #custom-notification:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Distinct Vibrant Colors for Every System Icon */
+#pulseaudio {
+    color: @cyan;
+}
+#pulseaudio.muted {
+    color: @inactive;
+}
+
+#network {
+    color: @blue;
+}
+#network.disconnected,
+#network.disabled {
+    color: @inactive;
+}
+
+#bluetooth {
+    color: @indigo;
+}
+#bluetooth.connected {
+    color: @green;
+}
+#bluetooth.off,
+#bluetooth.disabled {
+    color: @inactive;
+}
+
+#power-profiles-daemon {
+    color: @yellow;
+}
+#power-profiles-daemon.performance {
+    color: @red;
+}
+#power-profiles-daemon.balanced {
+    color: @blue;
+}
+#power-profiles-daemon.power-saver {
+    color: @green;
+}
+
+#battery {
+    color: @green;
+}
+#battery.charging,
+#battery.plugged {
+    color: @teal;
+}
+#battery.warning:not(.charging) {
+    color: @yellow;
+}
+#battery.critical:not(.charging) {
+    color: @red;
+    animation: blink 1s linear infinite alternate;
+}
+
+#custom-notification {
+    color: @orange;
+}
+#custom-notification.dnd-notification,
+#custom-notification.dnd-none {
+    color: @inactive;
+}
+
+/* Clock (Bottom Edge Capsule) */
+#clock {
+    min-width: 28px;
+    padding: 6px 0;
+    margin-bottom: 1px;
+    background: @module-bg;
+    border: 1px solid @border-color;
+    color: @fg;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+#clock:hover {
+    background: @module-bg-hover;
+    border-color: @border-color;
+}
+
+/* Tooltips */
 tooltip {
-    border-radius: 15px;
+    border-radius: 6px;
     background: @tooltip-bg;
+    border: 1px solid @border-color;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
 
 tooltip label {
-    padding: 3px 10px;
+    padding: 4px 8px;
     color: @fg;
-	font-weight: 700;
+    font-weight: 600;
+    font-size: 11px;
 }
 
-.popup * {
-    box-shadow: none;
-    outline: none;
-    border-radius: 10px;
-}
-
-menu {
-    border-radius: 10px;
-    font-weight: 700;
-    color: @fg;
-    background: @tooltip-bg;
-}
-
-menu > * {
-    padding: 3px 0px;
-}
-
-menu > *:hover {
-    border-radius: 10px;
-    background-color: @highlight;
-}
-
-/* Sliders */
-
-slider {
-    opacity: 0;
-    box-shadow: none;
-}
-
-trough {
-    min-width: 50px;
-    min-height: 5px;
-    border-radius: 8px;
-    background: @inactive;
-}
-
-trough highlight {
-    border-radius: 8px;
-    background-color: @fg;
-    background-image: none; /* Some gtk themes set an svg for background. */
+@keyframes blink {
+    to {
+        background-color: #ffffff;
+        color: #000000;
+    }
 }

@@ -1,13 +1,30 @@
-/* Tokyo night light color theme */
+/* Modern Light Palette
+   Derived from Tokyo Night Light & Edna Light aesthetics */
 
-@define-color module-bg     rgba(214, 216, 223, 0.9);
-@define-color tooltip-bg    rgba(214, 216, 223, 1);
-@define-color inactive      #707280;
-@define-color fg            #343B58;
-@define-color workspace-fg  @fg;
-@define-color highlight     #dcdee0;
+@define-color bg-base         #e6e7ed;
+@define-color bar-bg          rgba(235, 238, 246, 0.90);
+@define-color module-bg       rgba(255, 255, 255, 0.75);
+@define-color module-bg-alt   rgba(225, 228, 238, 0.95);
+@define-color module-bg-hover rgba(215, 220, 235, 0.98);
+@define-color tooltip-bg      rgba(255, 255, 255, 0.98);
+@define-color border-color    rgba(0, 0, 0, 0.08);
+@define-color border-active   rgba(113, 92, 176, 0.5);
 
-@define-color red           #f7768e;
-@define-color blue          #2959aa;
-@define-color yellow        #e0af68;
-@define-color green         #41a6b5;
+@define-color fg              #343b58;
+@define-color fg-dim          #565a6e;
+@define-color inactive        #9aa5ce;
+@define-color workspace-fg    #343b58;
+
+@define-color highlight       #715cb0;
+@define-color accent          #715cb0;
+@define-color accent-alt      #3d59a1;
+
+@define-color red             #f7768e;
+@define-color orange          #ff9e64;
+@define-color yellow          #e0af68;
+@define-color green           #41a6b5;
+@define-color teal            #388c99;
+@define-color blue            #2959aa;
+@define-color cyan            #007197;
+@define-color purple          #715cb0;
+@define-color magenta         #c6437c;

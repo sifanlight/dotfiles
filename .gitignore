@@ -2,3 +2,24 @@
 test
 dest
 *.log
+*.bak
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+._*
+
+# Ignore installed binaries and symlinks in .local/bin
+.local/bin/agy*
+.local/bin/claude
+.local/bin/codex
+.local/bin/hyprshell
+
+# Tmux plugins managed by TPM
+.config/tmux/plugins/*
+!.config/tmux/plugins/.gitkeep
+
+# Systemd generated targets and wants
+.config/systemd/user/*.wants/
+

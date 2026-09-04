@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+import os
+import sys
+import socket
+import select
+import signal
+
+def main():
+    xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")
+    real_sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE", "")
+    if not real_sig:
+        sys.exit(1)
+
+    real_sock_path = f"{xdg_runtime}/hypr/{real_sig}/.socket.sock"
+    real_sock2_path = f"{xdg_runtime}/hypr/{real_sig}/.socket2.sock"
+
+    proxy_sig = f"proxy_{real_sig}"
+    proxy_dir = f"{xdg_runtime}/hypr/{proxy_sig}"
+    os.makedirs(proxy_dir, exist_ok=True)
+
+    proxy_sock2_path = f"{proxy_dir}/.socket2.sock"
+    if not os.path.exists(proxy_sock2_path):
+        try:
+            os.symlink(real_sock2_path, proxy_sock2_path)
+        except (FileExistsError, OSError):
+            pass
+
+    proxy_sock_path = f"{proxy_dir}/.socket.sock"
+    if os.path.exists(proxy_sock_path):
+        try:
+            os.unlink(proxy_sock_path)
+        except OSError:
+            pass
+
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(proxy_sock_path)
+    server.listen(16)
+
+    def cleanup(*args):
+        try:
+            if os.path.exists(proxy_sock_path):
+                os.unlink(proxy_sock_path)
+            if os.path.islink(proxy_sock2_path):
+                os.unlink(proxy_sock2_path)
+            os.rmdir(proxy_dir)
+        except OSError:
+            pass
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, cleanup)
+    signal.signal(signal.SIGTERM, cleanup)
+
+    def translate_cmd(raw: bytes) -> bytes:
+        text = raw.decode("utf-8", errors="ignore")
+        trimmed = text.strip()
+        for prefix in ("/dispatch ", "dispatch "):
+            if trimmed.startswith(prefix):
+                rest = trimmed[len(prefix):].strip()
+                if rest.startswith("workspace "):
+                    ws = rest[len("workspace "):].strip()
+                    return f'dispatch hl.dsp.focus({{ workspace = "{ws}" }})\n'.encode("utf-8")
+                elif rest.startswith("focusworkspaceoncurrentmonitor "):
+                    ws = rest[len("focusworkspaceoncurrentmonitor "):].strip()
+                    return f'dispatch hl.dsp.focus({{ workspace = "{ws}" }})\n'.encode("utf-8")
+                elif rest.startswith("movetoworkspace "):
+                    ws = rest[len("movetoworkspace "):].strip()
+                    return f'dispatch hl.dsp.window.move({{ workspace = "{ws}", follow = false }})\n'.encode("utf-8")
+                elif rest.startswith("movetoworkspacesilent "):
+                    ws = rest[len("movetoworkspacesilent "):].strip()
+                    return f'dispatch hl.dsp.window.move({{ workspace = "{ws}", follow = false }})\n'.encode("utf-8")
+                break
+        return raw
+
+    while True:
+        try:
+            client, _ = server.accept()
+        except KeyboardInterrupt:
+            break
+        except Exception:
+            continue
+
+        try:
+            req = client.recv(4096)
+            if req:
+                mod_req = translate_cmd(req)
+                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as real:
+                    real.connect(real_sock_path)
+                    real.sendall(mod_req)
+                    while True:
+                        resp = real.recv(4096)
+                        if not resp:
+                            break
+                        client.sendall(resp)
+        except Exception:
+            pass
+        finally:
+            client.close()
+
+if __name__ == "__main__":
+    main()

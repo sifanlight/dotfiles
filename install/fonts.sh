@@ -18,19 +18,8 @@ else
     exit
 fi
 
-# Previous fontconfig exists
-if [[ -e "$DEST/.config/fontconfig" ]]; then
-    _info "Previous fontconfig found, backing up..."
+link_file_or_dir "$SRC/.config/fontconfig" "$DEST/.config/fontconfig"
 
-    ensure_backup_dir
-
-    mkdir -p "$BACKUP_DIR"/.config
-    mv "$DEST/.config/fontconfig" "$BACKUP_DIR"/.config
-fi
-
-_info "Copying fontconfig..."
-mkdir -p "$DEST/.config"
-cp -r "$SRC/.config/fontconfig" "$DEST/.config/"
 
 # A *user* fontconfig does not need root; running fc-cache as root only
 # rebuilds root's cache and needlessly prompts for a password.

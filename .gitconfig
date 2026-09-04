@@ -1,0 +1,5 @@
+[user]
+	name = Sina Karimi
+	email = si.karimi1378@gmail.com
+[credential]
+	helper = /usr/lib/git-core/git-credential-libsecret

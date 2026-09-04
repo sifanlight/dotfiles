@@ -18,6 +18,7 @@ local startup = {
     "swaync", -- swaync
     "/usr/lib/polkit-kde-authentication-agent-1", -- Policy manager (prompts for sudo access if app requests)
     "hypridle", -- "Idle daemon"
+    "hyprshell run", -- Workspace & window switcher / overview
     "~/.local/bin/dock", -- dock
     "~/.local/bin/at_startup" -- Misc user defined custom shell scripts
 }

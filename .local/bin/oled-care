@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+# Checkerboard mask over the static left strip of the OLED panel, via hyproled.
+#
+# Only the shader half lives here; the gap/border jitter is in
+# ~/.config/hypr/config/oled.lua, where the configured base values are
+# readable and so the jitter cannot drift.
+#
+#   oled-care apply       flip the checkerboard phase and (re)apply
+#   oled-care off         turn it off and KEEP it off across reloads
+#   oled-care on          turn it back on
+#   oled-care toggle      flip between the two (this is what SUPER+CTRL+O runs)
+#   oled-care status      what is currently active
+#   oled-care uninstall   remove the config hook and undo everything
+#
+# Applying is a no-op when the OLED is not lit: in the `external` monitor
+# profile there is nothing to protect, and the shader is cleared instead.
+
+set -uo pipefail
+
+OLED="eDP-1"
+HYPROLED="$HOME/.local/bin/hyproled"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/oled-care"
+HYPRLAND_LUA="$HOME/.config/hypr/hyprland.lua"
+
+# While this file exists, both this script and oled.lua stand down. It
+# survives reloads and reboots, so `off` means off until you say otherwise.
+FLAG_DISABLED="${XDG_STATE_HOME:-$HOME/.local/state}/hypr/oled-care/disabled"
+
+# Physical-pixel width of the protected left vertical strip when the bar cannot be
+# measured (waybar not running yet at startup, for instance).
+FALLBACK_STRIP=76
+
+mkdir -p "$STATE"
+
+# Monitor entry for the OLED, only if it is enabled. Empty if it is not.
+oled_json() {
+    hyprctl monitors -j 2>/dev/null | jq -c --arg n "$OLED" '.[] | select(.name == $n)'
+}
+
+# Physical-pixel width of the region the vertical bar occupies on the left,
+# measured from the left edge of the framebuffer. hyprctl layers reports logical
+# coordinates, so everything is multiplied by the monitor scale.
+strip_width() {
+    local scale=$1 w
+    w=$(hyprctl layers -j 2>/dev/null | jq -r --arg m "$OLED" '
+            .[$m].levels // {} | to_entries[] | .value[]?
+            | select(.namespace == "waybar")
+            | (.x + .w)' | head -n1)
+
+    if [[ -z $w || $w == "null" ]]; then
+        printf '%s' "$FALLBACK_STRIP"
+        return
+    fi
+
+    # +2px of slack so the bar's right edge is inside the protected region
+    awk -v w="$w" -v s="$scale" 'BEGIN { printf "%d", int(w * s + 0.999) + 2 }'
+}
+
+apply() {
+    if [[ -e $FLAG_DISABLED ]]; then
+        "$HYPROLED" off >/dev/null 2>&1
+        echo "disabled (oled-care on, to re-enable)"
+        return 0
+    fi
+
+    local mon; mon=$(oled_json)
+
+    if [[ -z $mon ]]; then
+        # OLED is off - nothing to protect, and a stale shader would then be
+        # masking whatever display *is* lit.
+        "$HYPROLED" off >/dev/null 2>&1
+        echo "off (${OLED} not lit)"
+        return 0
+    fi
+
+    local id scale height strip
+    id=$(jq -r '.id'    <<< "$mon")
+    scale=$(jq -r '.scale' <<< "$mon")
+    height=$(jq -r '.height' <<< "$mon")
+    strip=$(strip_width "$scale")
+
+    # -s flips the checkerboard phase on every call; -m takes a monitor *id*,
+    # and ids are reassigned as monitors come and go, so it is resolved fresh
+    # every time rather than remembered.
+    "$HYPROLED" -s -m "$id" -a "0:0:${strip}:${height}" || return 1
+
+    local phase=0
+    [[ -r /dev/shm/hyproled_shift.state ]] && read -r phase < /dev/shm/hyproled_shift.state
+    printf 'on  %s id=%s  strip=0:0:%s:%s  phase=%s\n' "$OLED" "$id" "$strip" "$height" "$phase"
+}
+
+# User-facing off: sticky.
+off() {
+    mkdir -p "$(dirname "$FLAG_DISABLED")"
+    : > "$FLAG_DISABLED"
+    "$HYPROLED" off >/dev/null 2>&1
+    echo "off, and will stay off (oled-care on, to re-enable)"
+}
+
+on() {
+    rm -f "$FLAG_DISABLED"
+    apply
+}
+
+# The visual effect of toggling is subtle by design, so say which way it went.
+say() {
+    command -v notify-send >/dev/null || return 0
+    notify-send --app-name oled-care --icon "$2" "OLED care" "$1" \
+        -h "string:x-canonical-private-synchronous:oled-care" 2>/dev/null || true
+}
+
+toggle() {
+    if [[ -e $FLAG_DISABLED ]]; then
+        on
+        say "Protection on" video-display
+    else
+        off
+        say "Protection off" video-display-symbolic
+    fi
+}
+
+# Internal: drop the shader without touching the sticky flag. Used by
+# oled.lua when the OLED simply is not the lit display right now.
+clear_shader() {
+    "$HYPROLED" off >/dev/null 2>&1
+    echo "shader cleared"
+}
+
+status() {
+    local set_to
+    set_to=$(hyprctl getoption decoration:screen_shader 2>/dev/null | sed -n 's/^str: *//p')
+    printf 'shader:   %s\n' "${set_to:-(none)}"
+
+    local phase=0
+    [[ -r /dev/shm/hyproled_shift.state ]] && read -r phase < /dev/shm/hyproled_shift.state
+    printf 'phase:    %s\n' "$phase"
+
+    printf 'gaps:     in=%s out=%s border=%s\n' \
+        "$(hyprctl getoption general:gaps_in    2>/dev/null | sed -n 's/^css gap data: //p' | awk '{print $1}')" \
+        "$(hyprctl getoption general:gaps_out   2>/dev/null | sed -n 's/^css gap data: //p' | awk '{print $1}')" \
+        "$(hyprctl getoption general:border_size 2>/dev/null | sed -n 's/^int: *//p')"
+
+    printf 'enabled:  %s\n' "$([[ -e $FLAG_DISABLED ]] && echo 'no  (sticky off)' || echo yes)"
+    printf 'oled lit: %s\n' "$([[ -n $(oled_json) ]] && echo yes || echo no)"
+    printf 'hooked:   %s\n' "$(grep -q 'config.oled' "$HYPRLAND_LUA" && echo yes || echo no)"
+}
+
+uninstall() {
+    rm -f "$FLAG_DISABLED"
+    clear_shader
+    # Drop the require line; a plain reload then restores your real gaps,
+    # because options.lua re-applies them on every parse.
+    if grep -q 'require("config.oled")' "$HYPRLAND_LUA"; then
+        sed -i '/require("config\.oled")/d' "$HYPRLAND_LUA"
+        echo "removed require(\"config.oled\") from hyprland.lua"
+    fi
+    local binds="$HOME/.config/hypr/config/binds.lua"
+    if grep -q 'run_script("oled-care' "$binds"; then
+        sed -i '/run_script("oled-care/d' "$binds"
+        echo "removed the SUPER+CTRL+O bind from binds.lua"
+    fi
+    hyprctl reload >/dev/null 2>&1
+    echo "reloaded - gaps and borders are back to your configured values"
+    echo
+    echo "still on disk, delete if you want them gone:"
+    echo "  ~/.config/hypr/config/oled.lua"
+    echo "  ~/.local/bin/oled-care"
+    echo "  ~/.local/bin/hyproled"
+    echo "  $STATE  (backups of hyprland.lua and options.lua)"
+}
+
+case "${1-apply}" in
+    apply)     apply ;;
+    off)       off ;;
+    on)        on ;;
+    toggle)    toggle ;;
+    clear)     clear_shader ;;
+    status)    status ;;
+    uninstall) uninstall ;;
+    -h|--help) awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0" ;;
+    *)         echo "usage: oled-care [apply|on|off|toggle|status|uninstall]" >&2; exit 1 ;;
+esac

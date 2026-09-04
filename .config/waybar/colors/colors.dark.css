@@ -1,16 +1,30 @@
-/* Derived from the KDE "Edna" global theme (~/.config/kdeglobals).
-   Surfaces and accent come from the KDE color scheme; the four semantic
-   accents (red/blue/yellow/green) are kept from the original palette
-   because Edna does not define usable equivalents. */
+/* High-Contrast Vibrant Dark Palette */
 
-@define-color module-bg     rgba(38, 50, 56, 0.92);  /* Colors:Window BackgroundNormal */
-@define-color tooltip-bg    @module-bg;
-@define-color inactive      #acb4c4;                 /* ForegroundInactive */
-@define-color fg            #edf0f2;                 /* ForegroundNormal (View) */
-@define-color workspace-fg  @fg;
-@define-color highlight     #926ee4;                 /* DecorationFocus / accent */
+@define-color bg-base         #10121b;
+@define-color bar-bg          rgba(14, 16, 26, 0.94);
+@define-color module-bg       rgba(32, 38, 62, 0.92);
+@define-color module-bg-alt   rgba(42, 50, 80, 0.95);
+@define-color module-bg-hover rgba(58, 68, 108, 0.98);
+@define-color tooltip-bg      rgba(16, 18, 30, 0.98);
+@define-color border-color    rgba(255, 255, 255, 0.14);
+@define-color border-active   rgba(168, 85, 247, 0.65);
 
-@define-color red           #f7768e;
-@define-color blue          #1f8cec;                 /* ForegroundPositive */
-@define-color yellow        #f67400;                 /* ForegroundNeutral */
-@define-color green         #41a6b5;
+@define-color fg              #f8fafc;
+@define-color fg-dim          #94a3b8;
+@define-color inactive        #64748b;
+@define-color workspace-fg    #cbd5e1;
+
+@define-color highlight       #a855f7; /* Vibrant Violet Accent */
+@define-color accent          #a855f7;
+@define-color accent-alt      #38bdf8;
+
+@define-color red             #f43f5e; /* Vivid Rose Red */
+@define-color orange          #fb923c; /* Vivid Coral Orange */
+@define-color yellow          #fbbf24; /* Vivid Amber */
+@define-color green           #34d399; /* Vivid Emerald Green */
+@define-color teal            #2dd4bf; /* Vivid Teal */
+@define-color cyan            #22d3ee; /* Vivid Cyan */
+@define-color blue            #38bdf8; /* Vivid Sky Blue */
+@define-color indigo          #818cf8; /* Vivid Indigo */
+@define-color purple          #c084fc; /* Vivid Lavender */
+@define-color magenta         #f43f5e; /* Vivid Magenta */

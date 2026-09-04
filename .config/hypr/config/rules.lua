@@ -36,7 +36,6 @@ hl.window_rule({ stay_focused = true, match = { title = "^(Rename device)$", cla
 -- Tags 
 hl.window_rule({ float = true,    match = { tag = "float" }})
 hl.window_rule({ opacity = 1,     match = { tag = "opaque" }})
-hl.window_rule({ border_size = 2, match = { tag = "bordered" }})
 
 
 hl.window_rule({
@@ -125,26 +124,23 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name = "Ghostty border",
+    name = "Ghostty opacity",
     match = {
         class = "com.mitchellh.ghostty|ghostty|peaclock"
     },
 
     -- Deliberately fully opaque: no terminal transparency.
     opacity = 1,
-    border_size = 2,
 })
 
 hl.window_rule({
     name = "Browser Picture in Picture",
     match = {
-        title = "Picture-in-Picture",
-        class = "(?i)^(helium-browser|helium|zen)(.*)$",
+        title = "(?i)^picture[- ]in[- ]picture$",
     },
 
-    size = "300 200",
-    move = "1600 50",
-    border_size = 2,
+    size = "367 206",
+    move = "1544 866",
     pin = true,
     float = true,
     no_initial_focus = true,

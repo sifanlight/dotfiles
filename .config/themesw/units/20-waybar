@@ -8,5 +8,5 @@ else
     ln -fs colors.light.css colors.css
 fi
 
-killall waybar ; waybar &
+~/.local/bin/waybar-auto &
 

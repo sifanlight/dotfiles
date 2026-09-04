@@ -129,23 +129,22 @@ SCRIPTS=()
 
 if [ $(prompt "Would you like a complete installation?") = 1 ]; then
     SCRIPTS+=(
-        "config.sh" "gtk.sh" "icons.sh" "scripts.sh" "spicetify.sh" "vscodium.sh" "wallpapers.sh" "waybar.sh" "zen.sh" "zsh.sh"
-        "rofi.sh" "swaync.sh"
+        "config.sh" "gtk.sh" "icons.sh" "fonts.sh" "scripts.sh" "spicetify.sh" "vscodium.sh" "wallpapers.sh" "zsh.sh"
     )
 else
     declare -A SCRIPT_PROMPTS
 
     SCRIPT_PROMPTS=(
-        ["config.sh"]="Install allmost all the configuration files from .config and .local?" 
+        ["config.sh"]="Install and link all configuration files (.config, shell dotfiles, tmux)?" 
         ["gtk.sh"]="Install GTK themes?"
         ["icons.sh"]="Install icon and cursor themes?"
-        ["scripts.sh"]="Install all the scripts? (necessary for proper basic functionality)"
+        ["scripts.sh"]="Install all the helper scripts in ~/.local/bin?"
         ["spicetify.sh"]="Install spotify theme?"
         ["vscodium.sh"]="Install vscodium themes?"
         ["wallpapers.sh"]="Install wallpapers pack?"
         ["waybar.sh"]="Install waybar configurations?"
         ["zen.sh"]="Install small zen theme?"
-        ["zsh.sh"]="Install zsh configs, oh-my-zsh? with modified lukerandall theme?"
+        ["zsh.sh"]="Install zsh configs, oh-my-zsh and plugins?"
         ["rofi.sh"]="Install rofi themes/applets?"
         ["swaync.sh"]="Install swaync configuration files?"
         ["fonts.sh"]="Install fonts and fontconfig?"

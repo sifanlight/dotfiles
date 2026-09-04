@@ -3,17 +3,8 @@ source $(dirname "$0")/__base.sh
 
 _script "Installing rofi configuration files..."
 
-if [[ -e "$DEST/.config/rofi" ]]; then
-    _info "Previous rofi config found, backing up..."
+link_file_or_dir "$SRC/.config/rofi" "$DEST/.config/rofi"
 
-    ensure_backup_dir
-
-    mkdir -p "$BACKUP_DIR"/.config
-    mv "$DEST/.config/rofi" "$BACKUP_DIR"/.config
-fi
-
-mkdir -p "$DEST/.config"
-cp -r "$SRC/.config/rofi" "$DEST/.config/"
 
 if rofi -h | grep -qE 'drun-(games|utils|network|media|text)'; then
     _info "Patched rofi detected, adding special modes buttons"

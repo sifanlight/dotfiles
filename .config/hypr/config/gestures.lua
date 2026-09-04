@@ -28,3 +28,13 @@ end})
 hl.gesture({ fingers = 4, direction = "pinchin", action = function ()
     hl.dispatch(hl.dsp.window.fullscreen({ action="unset" })) 
 end})
+
+-- Hyprshell workspace overview on 4-finger swipe up
+hl.gesture({ fingers = 4, direction = "up", action = function ()
+    hl.exec_cmd("hyprshell socat '\"OpenOverview\"'")
+end})
+
+-- Close hyprshell workspace overview on 4-finger swipe down
+hl.gesture({ fingers = 4, direction = "down", action = function ()
+    hl.exec_cmd('sh -c "hyprctl layers | grep -q hyprshell_overview && hyprshell socat \\"\\"OpenOverview\\"\\""')
+end})
