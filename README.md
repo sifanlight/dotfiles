@@ -43,6 +43,8 @@ Default terminal emulator is `alacritty` make sure it is installed. Press `SUPER
 
 ### Hyprland coniguration
 
+> The live setup is [`~/.config/hypr-noctalia/`](.config/hypr-noctalia/) (Noctalia shell, two-GPU handling via `gfx`); see its [README](.config/hypr-noctalia/README.md). `~/.config/hypr` is a symlink that `switch-to-noctalia` / `switch-to-classic` flip between it and the older waybar setup described below.
+
 **Hyprland configuration files are located** in [`~/.config/hypr/`](.config/hypr/) and are splitted into sub-configs that are located under `config/`. Each one has a link to the wiki page related to it at the top. 
 
 ### XDG Base directories

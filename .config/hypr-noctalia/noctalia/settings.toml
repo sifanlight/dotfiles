@@ -1,0 +1,531 @@
+config_version = 14
+
+[bar.default]
+background_opacity = 0.59999998658895493
+contact_shadow = true
+end = [ "tray", "group:g2", "group:g1", "power_profile", "notifications" ]
+margin_ends = 0
+padding = 18
+position = "bottom"
+radius = 0
+reserve_space = false
+shadow = false
+smart_auto_hide = true
+start = [ "launcher", "active_window", "workspaces" ]
+thickness = 37
+
+    [[bar.default.capsule_group]]
+    accordion = false
+    accordion_direction = "end"
+    enabled = true
+    fill = "surface_variant"
+    id = "g1"
+    members = [ "gamermode_2", "volume", "brightness", "bluetooth", "network", "battery" ]
+    opacity = 1.0
+    padding = 6.0
+
+    [[bar.default.capsule_group]]
+    accordion = false
+    accordion_direction = "end"
+    enabled = true
+    fill = "surface_variant"
+    id = "g2"
+    members = [ "media", "now-playing" ]
+    opacity = 1.0
+    padding = 6.0
+
+[desktop_widgets]
+enabled = false
+schema_version = 2
+widget_order = [
+    "desktop-widget-0000000000000001",
+    "desktop-widget-0000000000000002",
+    "desktop-widget-0000000000000004",
+    "desktop-widget-0000000000000005"
+]
+
+    [desktop_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [desktop_widgets.widget.desktop-widget-0000000000000001]
+    box_height = 224.0
+    box_width = 224.0
+    cx = 960.0
+    cy = 156.0
+    output = "HDMI-A-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "clock"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000001.settings]
+        background = false
+        circle = true
+        clock_style = "analog"
+        color = "on_surface"
+
+    [desktop_widgets.widget.desktop-widget-0000000000000002]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 212.00001525878906
+    cy = 393.0
+    output = "HDMI-A-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "calendar"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000002.settings]
+        background = false
+        show_events = false
+
+    [desktop_widgets.widget.desktop-widget-0000000000000004]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 198.0
+    cy = 103.00000762939453
+    output = "HDMI-A-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "weather"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000004.settings]
+        background = false
+        shadow = false
+        show_forecast = true
+
+    [desktop_widgets.widget.desktop-widget-0000000000000005]
+    box_height = 0.0
+    box_width = 0.0
+    cx = 1760.0
+    cy = 182.0
+    output = "HDMI-A-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "noctalia/timer:desktop"
+
+        [desktop_widgets.widget.desktop-widget-0000000000000005.settings]
+        background = false
+
+[dock]
+background_opacity = 0.67999998480081558
+enabled = false
+icon_size = 32
+main_axis_padding = 15
+margin_edge = 5
+reserve_space = false
+show_dots = true
+smart_auto_hide = true
+
+[hot_corners.top_left]
+action = "window_switcher"
+
+[idle]
+behavior_order = [ "dim", "kbd-backlight", "lock", "screen-off", "suspend" ]
+pre_action_fade_seconds = 2.0
+
+    [idle.behavior.dim]
+    action = "command"
+    command = "brightnessctl -s set 10"
+    resume_command = "brightnessctl -r"
+    timeout = 150
+
+    [idle.behavior.kbd-backlight]
+    action = "command"
+    command = "brightnessctl -s -d asus::kbd_backlight set 0"
+    resume_command = "brightnessctl -r -d asus::kbd_backlight"
+    timeout = 150
+
+    [idle.behavior.lock]
+    action = "lock"
+    timeout = 300
+
+    [idle.behavior.screen-off]
+    action = "screen_off"
+    timeout = 330
+
+    [idle.behavior.suspend]
+    action = "suspend"
+    lock_before_suspend = true
+    timeout = 1800
+
+[location]
+address = "Boston, USA"
+
+[lockscreen]
+blurred_desktop = true
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [
+    "lockscreen-login-box@HDMI-A-1",
+    "lockscreen-login-box@eDP-1",
+    "lockscreen-login-box@FALLBACK",
+    "lockscreen-login-box@DP-5"
+]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@DP-5"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 898.0
+    output = "DP-5"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@DP-5".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@FALLBACK"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 898.0
+    output = "FALLBACK"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@FALLBACK".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 943.5
+    output = "HDMI-A-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 837.3333740234375
+    output = "eDP-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_variant"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[notification]
+position = "bottom_right"
+
+[osd]
+background_opacity = 0.89999997988343239
+position = "bottom_center"
+position_vertical = "bottom_center"
+
+[plugins]
+enabled = [ "tranzem/media-lyrics", "noctalia/timer" ]
+
+[shell]
+font_family = "JetBrainsMono Nerd Font"
+password_style = "random"
+
+    [shell.panel]
+    transparency_mode = "glass"
+
+[theme]
+builtin = "Ayu"
+community_palette = "ADW"
+shell_mode = "dark"
+source = "wallpaper"
+wallpaper_scheme = "m3-content"
+
+    [theme.templates]
+    builtin_ids = [ "gtk3", "gtk4", "ghostty", "hyprland", "kitty", "starship" ]
+    community_ids = [ "claude-code", "codex", "spicetify", "neovim", "obsidian", "vscode", "rofi", "hyprtoolkit", "tmux", "yazi" ]
+
+[wallpaper]
+directory = "/home/sina/Pictures/wallpapers"
+transition_on_startup = true
+
+    [wallpaper.automation]
+    enabled = true
+    interval_seconds = 300
+    order = "random"
+    recursive = true
+
+    [wallpaper.default]
+    path = "/home/sina/Pictures/wallpapers/trees_fog_foggy_hill_grass.jpg"
+
+    [wallpaper.last]
+    path = "/home/sina/Pictures/wallpapers/trees_fog_foggy_hill_grass.jpg"
+
+    [wallpaper.monitors.DP-5]
+    path = "/home/sina/Pictures/wallpapers/trees_fog_foggy_hill_grass.jpg"
+
+    [wallpaper.monitors.HDMI-A-1]
+    path = "/home/sina/Pictures/wallpapers/trees_fog_foggy_hill_grass.jpg"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/sina/Pictures/wallpapers/misc/painting_clouds_hill_trees_field_sky_clouds_buildings_trees.jpg"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/abstract_tree_berries_white_branch_japan_blue.png"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-tonal-spot"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/arch_clouds_water_fog_mountains.jpg"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/city_grey_buildings_trees_lake_person_bench.jpg"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/clouds_tree_trees_tokyo_sky_city_road_signs.png"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/crane_light_star_rain_art_sky_blue.png"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/people_field_abstract_mountain_forest_buildings_blue_green.jpg"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/purple_forest_flowers_trees_violets.jpg"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/rain_road_tree_foggy_bush_flowers_girl_umbrela_grey_outside_mountain.jpg"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/road_car_bar_cafee_city_night.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/road_clouds_sunset_lights_lake_river_trees_evening_drawing_anime.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/rain_green_lake_channel_city_students_umbrela_people_trees_bushes_girl.jpg"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/road_dark_car_trees_night_highway_fog_lights.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/road_evening_light_art_night_cars_mountains.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/russia_sunset_buildings_clouds_beautiful_evening_night_sky.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/sakura_nature_japan_dark_white_tree.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/sky_blue_white_clouds_nature_real.jpg"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/sky_field_grass_trees_flowers_green_blue_hill_evening_outside.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/sky_purple_clouds_art_blue_road_field_night_grey_stars_city.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/sky_tree_grass_green_teal_building_lights.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/waves_crashing_waves_on_the_ocean.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/tree_purple_sky_clouds_night_road_lake.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/misc/monochrome_black_white_antique_art_people.png"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/misc/mountain_art_white_snow_center.png"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/misc/mountain_snow_white_clouds_fog.jpg"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    builtin_palette = "Ayu"
+    palette_source = "builtin"
+    path = "/home/sina/Pictures/wallpapers/misc/mountains_lake_clouds_dark_sun.webp"
+    theme_mode = "dark"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/misc/painting_clouds_hill_trees_field_sky_clouds_buildings_trees.jpg"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/misc/painting_mountains_forest_grass_field_snow_green.jpg"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/misc/sea_clouds_blue_waves_white.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    path = "/home/sina/Pictures/wallpapers/misc/white_building_stone_mountain_people.png"
+    theme_mode = "auto"
+
+    [[wallpaper.favorite]]
+    palette_source = "wallpaper"
+    path = "/home/sina/Pictures/wallpapers/clouds_sky_fog_night_highway_dark_lights_tree.jpg"
+    theme_mode = "dark"
+    wallpaper_scheme = "m3-content"
+
+[weather]
+refresh_minutes = 60
+
+[widget.active_window]
+display = "icon_only"
+icon_size = 19
+max_length = 276
+min_length = 0
+
+[widget.battery]
+display_mode = "graphic"
+hide_when_full = true
+
+[widget.clock]
+format = "{:%a %b %d  •  %H:%M}"
+
+[widget.gamermode]
+type = "nomadcxx/gamer-mode:gamermode"
+
+[widget.gamermode_2]
+type = "nomadcxx/gamer-mode:gamermode"
+
+[widget.launcher]
+glyph = "menu-2"
+
+[widget.media]
+album_art_only = true
+art_size = 26
+title_scroll = "always"
+
+[widget.network]
+show_label = false
+vpn_status = "both"
+
+[widget.now-playing]
+enable_scroll = false
+hide_album_art = true
+type = "tranzem/media-lyrics:now-playing"
+
+[widget.workspaces]
+show_icons = false

@@ -29,7 +29,7 @@ local INTERNAL = "eDP-1"
 
 -- Which side of the internal panel externals land on. "auto-left" is the
 -- layout this config already had; "auto-right" flips it.
-local EXTERNAL_PLACEMENT = "auto-left"
+local EXTERNAL_PLACEMENT = "auto-right"
 
 -- The externals, in the order they physically sit on the desk, left to
 -- right. Anything not listed here still works - it just lands on the far

@@ -1,0 +1,18 @@
+# Restart NVIDIA Dynamic Boost once the system has settled.
+#
+# supergfxd starts nvidia-powerd the moment it loads the NVIDIA driver, and on
+# this ASUS Q540VJ a daemon started that early negotiates a bogus budget: the
+# RTX 3050 sits in P5 at ~25 W with the memory clock at 810 MHz for the whole
+# session. The same daemon started later, WHILE THE GPU IS AWAKE, gives the
+# full 65 W ceiling (measured 2026-09-27/28: 54 W in AsusMuxDgpu, 60 W in
+# Hybrid via prime-run, P0, 5501 MHz mem). In Hybrid the card is already
+# asleep a minute after boot, so the script wakes it for the restart.
+# Triggered by nvidia-powerd-restart.timer.
+[Unit]
+Description=Restart nvidia-powerd after boot so Dynamic Boost negotiates correctly
+After=nvidia-powerd.service supergfxd.service
+ConditionPathExists=/sys/bus/pci/drivers/nvidia
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/nvidia-powerd-restart.sh

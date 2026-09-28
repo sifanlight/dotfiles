@@ -67,3 +67,15 @@ btop
 wezterm
 zsh-autosuggestions
 zsh-syntax-highlighting
+
+# GPU: ASUS Q540VJ, Intel Iris Xe + RTX 3050 behind a MUX (see .config/hypr-noctalia/README.md)
+nvidia-open
+nvidia-utils
+lib32-nvidia-utils
+nvidia-prime        # prime-run for games in Hybrid mode
+libva-nvidia-driver # VA-API on the RTX (AsusMuxDgpu mode)
+intel-media-driver  # VA-API on the iGPU (Hybrid mode)
+vulkan-intel
+libva-utils         # vainfo
+asusctl
+noctalia

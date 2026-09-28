@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Switching to Noctalia desktop shell..."
+
+# 1. Disable legacy services
+systemctl --user disable --now hyprshell.service 2>/dev/null || true
+pkill -f waybar-auto 2>/dev/null || true
+killall waybar swaync nwg-dock-hyprland 2>/dev/null || true
+
+# 2. Point ~/.config/hypr to isolated hypr-noctalia config
+ln -sfn "$HOME/.config/hypr-noctalia" "$HOME/.config/hypr"
+
+# 3. Start Noctalia if not already running
+if ! pgrep -x noctalia >/dev/null 2>&1; then
+    noctalia >/dev/null 2>&1 &
+fi
+
+# 4. Reload Hyprland
+hyprctl reload
+
+echo "Switched to Noctalia! Hyprland reloaded."

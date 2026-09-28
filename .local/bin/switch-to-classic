@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Switching back to classic shell (waybar + swaync + nwg-dock)..."
+
+# 1. Stop Noctalia
+killall noctalia 2>/dev/null || true
+
+# 2. Point ~/.config/hypr back to dotfiles
+ln -sfn "$HOME/dotfiles/.config/hypr" "$HOME/.config/hypr"
+
+# 3. Reload Hyprland
+hyprctl reload
+
+# 4. Start classic shell components if not running
+if ! pgrep -x waybar >/dev/null 2>&1; then
+    waybar >/dev/null 2>&1 &
+fi
+if ! pgrep -x swaync >/dev/null 2>&1; then
+    swaync >/dev/null 2>&1 &
+fi
+if ! pgrep -x nwg-dock-hyprland >/dev/null 2>&1; then
+    dock >/dev/null 2>&1 &
+fi
+
+echo "Switched back to classic shell! Hyprland reloaded."

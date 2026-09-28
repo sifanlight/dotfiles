@@ -1,0 +1,10 @@
+[Unit]
+Description=Restart nvidia-powerd one minute after boot (Dynamic Boost workaround)
+
+[Timer]
+OnBootSec=60s
+AccuracySec=5s
+Unit=nvidia-powerd-restart.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Switch the laptop's GPU MUX between Hybrid (Intel drives the panel, the RTX
+# sleeps) and NVIDIA (the RTX drives the panel; best for games), and keep the
+# Hyprland config in step with it.
+#
+#   gfx status   what the MUX, the Hyprland config and the RTX are doing now
+#   gfx hybrid   panel on Intel, RTX suspends; games need `prime-run %command%`
+#   gfx nvidia   panel on the RTX; games run on it without prime-run
+#
+# A MUX change only takes effect after a reboot, so a switch ends by offering
+# one (pass -y to skip the prompt). supergfxd accepts mode changes from the
+# wheel group over D-Bus and logind accepts a reboot from an active session,
+# so no sudo is involved.
+#
+# Hyprland reads the GPU environment from ~/.config/hypr/config/gpu.lua, a
+# symlink to gpu-hybrid.lua or gpu-nvidia.lua that this script repoints. As a
+# safety net env.lua also reads the MUX register at startup and, if it
+# disagrees with the symlink, loads the file matching the hardware and sends
+# a notification. `gfx status` reports the same mismatch.
+
+set -euo pipefail
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/config"
+LINK="$CONFIG_DIR/gpu.lua"
+NVIDIA_PCI="0000:01:00.0"
+
+die() { printf 'gfx: %s\n' "$*" >&2; exit 1; }
+
+# supergfxctl mode name <-> config file suffix
+mode_of()   { case "$1" in hybrid) echo Hybrid ;; nvidia) echo AsusMuxDgpu ;; esac; }
+choice_of() { case "$1" in Hybrid) echo hybrid ;; AsusMuxDgpu) echo nvidia ;; Integrated) echo integrated ;; *) echo "$1" ;; esac; }
+
+current_mux()  { supergfxctl -g 2>/dev/null || die "supergfxctl not answering (is supergfxd running?)"; }
+current_link() { [ -L "$LINK" ] && basename "$(readlink "$LINK")" .lua | sed 's/^gpu-//' || echo "missing"; }
+
+status() {
+    local mux link pend
+    mux=$(current_mux)
+    link=$(current_link)
+    pend=$(supergfxctl -p 2>/dev/null || true)
+
+    printf 'MUX (supergfxctl):  %s\n' "$mux"
+    printf 'Hyprland config:    %s  (gpu.lua -> gpu-%s.lua)\n' "$link" "$link"
+    [ -n "$pend" ] && [ "$pend" != "No action required" ] && printf 'Pending:            %s\n' "$pend"
+
+    if [ -r "/sys/bus/pci/devices/$NVIDIA_PCI/power/runtime_status" ]; then
+        printf 'RTX power state:    %s\n' "$(cat "/sys/bus/pci/devices/$NVIDIA_PCI/power/runtime_status")"
+    fi
+
+    local log
+    log=$(ls -t "${XDG_RUNTIME_DIR:-/run/user/$UID}"/hypr/*/hyprland.log 2>/dev/null | head -1 || true)
+    if [ -n "$log" ]; then
+        local primary
+        primary=$(grep -a 'becomes primary drm' "$log" | tail -1 | grep -o '/dev/dri/card[0-9]*' || true)
+        if [ -n "$primary" ]; then
+            local pci
+            pci=$(basename "$(readlink -f "/sys/class/drm/$(basename "$primary")/device")")
+            printf 'Hyprland primary:   %s (%s)\n' "$primary" "$pci"
+        fi
+    fi
+
+    if [ "$(choice_of "$mux")" != "$link" ]; then
+        printf '\nWARNING: config (%s) does not match the MUX (%s).\n' "$link" "$mux"
+        printf 'Hyprland follows the MUX at startup, but run `gfx %s` to realign the config.\n' "$(choice_of "$mux")"
+        return 1
+    fi
+}
+
+switch_to() {
+    local choice=$1 yes=${2:-}
+    local target mux
+    target=$(mode_of "$choice")
+    mux=$(current_mux)
+
+    [ -f "$CONFIG_DIR/gpu-$choice.lua" ] || die "$CONFIG_DIR/gpu-$choice.lua is missing"
+
+    # 1. Point Hyprland at the matching environment file. Relative target so
+    #    the symlink survives the directory being moved or synced.
+    ln -sfn "gpu-$choice.lua" "$LINK"
+    printf 'config:  gpu.lua -> gpu-%s.lua\n' "$choice"
+
+    # 2. Ask supergfxd to flip the MUX.
+    if [ "$mux" = "$target" ]; then
+        printf 'mux:     already %s\n' "$target"
+        [ "$(supergfxctl -p 2>/dev/null)" = "No action required" ] && { printf 'Nothing to do.\n'; return 0; }
+    else
+        printf 'mux:     %s -> %s\n' "$mux" "$target"
+        supergfxctl -m "$target" || die "supergfxctl refused the change"
+    fi
+
+    # 3. A MUX change is applied by firmware at boot.
+    printf '\nThe MUX switches on the next boot.\n'
+    if [ "$yes" = "-y" ]; then
+        systemctl reboot
+    else
+        read -r -p 'Reboot now? [y/N] ' ans
+        case "$ans" in y|Y|yes) systemctl reboot ;; *) printf 'Not rebooting. Run `systemctl reboot` when ready.\n' ;; esac
+    fi
+}
+
+case "${1:-status}" in
+    status|-g|--get)  status ;;
+    hybrid|intel)     switch_to hybrid "${2:-}" ;;
+    nvidia|dgpu|rtx)  switch_to nvidia "${2:-}" ;;
+    -h|--help|help)   sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *)                die "unknown command '$1' (try: status, hybrid, nvidia)" ;;
+esac

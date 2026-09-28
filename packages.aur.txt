@@ -16,3 +16,6 @@ bibata-cursor-theme
 rog-control-center
 hyprshell-bin
 sioyek-dev
+
+# GPU MUX switching (gfx script)
+supergfxctl

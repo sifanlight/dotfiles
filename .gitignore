@@ -23,3 +23,6 @@ dest
 # Systemd generated targets and wants
 .config/systemd/user/*.wants/
 
+# Rendered by Noctalia's theme templates on every palette change
+.config/hypr-noctalia/noctalia.lua
+.config/hypr-noctalia/hyprtoolkit.conf

@@ -27,9 +27,41 @@ LABELS=('Extended' 'External only' 'Laptop only' 'Mirror')
 
 die() { printf '%s\n' "$*" >&2; exit 1; }
 
+hypr_dir() { printf '%s' "${XDG_RUNTIME_DIR:-/run/user/$UID}/hypr"; }
+
+# A tmux server, or any long-lived shell, outlives a Hyprland restart and goes
+# on handing out the HYPRLAND_INSTANCE_SIGNATURE it started with, so hyprctl
+# ends up addressing a socket that no longer exists. Believe the runtime
+# directory over whatever we inherited, falling back to newest-wins only when
+# the inherited signature is genuinely dead.
+use_live_instance() {
+    local dir newest='' entry
+    dir=$(hypr_dir)
+
+    [[ -n ${HYPRLAND_INSTANCE_SIGNATURE-} \
+       && -S $dir/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock ]] && return 0
+
+    for entry in "$dir"/*/; do
+        entry=${entry%/}
+        # proxy_* shadows a real instance rather than being one, so skip it and
+        # let the timestamp comparison see only genuine instances.
+        [[ ${entry##*/} == proxy_* ]] && continue
+        [[ -S $entry/.socket.sock ]] || continue
+        [[ -z $newest || $entry -nt $newest ]] && newest=$entry
+    done
+
+    [[ -n $newest ]] || return 1
+    export HYPRLAND_INSTANCE_SIGNATURE=${newest##*/}
+}
+
+# hyprctl exits 4 when it cannot reach the socket, 7 on a Lua error. The old
+# check only matched output beginning with "error", so an unreachable socket
+# read as success and every command became a silent no-op.
 eval_lua() {
-    hyprctl eval "$1" 2>&1 | grep -q '^error' && die "hyprland rejected: $1"
-    return 0
+    use_live_instance || die "no running Hyprland instance in $(hypr_dir)"
+
+    local out
+    out=$(hyprctl eval "$1" 2>&1) || die "hyprctl eval failed: $out"
 }
 
 current() {
@@ -48,9 +80,18 @@ set_profile() {
 status() {
     printf 'profile: %s\n' "$(current)"
     printf 'lit:\n'
-    hyprctl monitors -j 2>/dev/null \
-        | jq -r '.[] | "  \(.name)  \(.width)x\(.height)@\(.refreshRate | floor)  at \(.x)x\(.y)  scale \(.scale)"' \
-        || printf '  (hyprland not reachable)\n'
+    # Feed jq only what is actually JSON: an unreachable socket makes hyprctl
+    # print a connection message, which jq then reports as a parse error over
+    # the top of the useful "not reachable" line.
+    local json=''
+    if use_live_instance; then
+        json=$(hyprctl monitors -j 2>/dev/null)
+    fi
+    if [[ $json == \[* ]]; then
+        jq -r '.[] | "  \(.name)  \(.width)x\(.height)@\(.refreshRate | floor)  at \(.x)x\(.y)  scale \(.scale)"' <<<"$json"
+    else
+        printf '  (hyprland not reachable)\n'
+    fi
 
     printf 'connected:\n'
     for entry in /sys/class/drm/card*-*/status; do
