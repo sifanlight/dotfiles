@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Blueman Applet
+Exec=blueman-applet
+Icon=blueman
+# Overrides /etc/xdg/autostart/blueman.desktop: Plasma has Bluedevil, so two
+# Bluetooth tray applets would show up there.
+NotShowIn=KDE;

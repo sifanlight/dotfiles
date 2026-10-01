@@ -129,7 +129,7 @@ SCRIPTS=()
 
 if [ $(prompt "Would you like a complete installation?") = 1 ]; then
     SCRIPTS+=(
-        "config.sh" "gtk.sh" "icons.sh" "fonts.sh" "scripts.sh" "spicetify.sh" "vscodium.sh" "wallpapers.sh" "zsh.sh"
+        "config.sh" "gtk.sh" "icons.sh" "fonts.sh" "scripts.sh" "spicetify.sh" "vscodium.sh" "wallpapers.sh" "zsh.sh" "kde.sh"
     )
 else
     declare -A SCRIPT_PROMPTS
@@ -148,6 +148,7 @@ else
         ["rofi.sh"]="Install rofi themes/applets?"
         ["swaync.sh"]="Install swaync configuration files?"
         ["fonts.sh"]="Install fonts and fontconfig?"
+        ["kde.sh"]="Apply KDE Plasma settings (keyboard layouts, numlock, GTK sync off)?"
     )
 
     for SCRIPT in $SRC/install/*; do

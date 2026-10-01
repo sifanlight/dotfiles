@@ -41,6 +41,17 @@ My daily drive archlinux dotfiles including scripts, wallpapers pack and some ot
 
 Default terminal emulator is `alacritty` make sure it is installed. Press `SUPER + ;` to run it. For more bindings list see [Binds](#binds)
 
+### KDE Plasma alongside Hyprland
+
+Both desktops can be used from the same login screen. What keeps them apart:
+
+- [`xdg-desktop-portal/hyprland-portals.conf`](.config/xdg-desktop-portal/hyprland-portals.conf) is named for Hyprland only, so Plasma uses its own portals (KDE file dialogs, screen sharing).
+- [`plasma-workspace/env/dotfiles.sh`](.config/plasma-workspace/env/dotfiles.sh) gives Plasma the same `PATH`, `BROWSER`, `EDITOR`, XDG paths etc. that Hyprland gets from `env.lua`. Keep the two in step.
+- [`install/kde.sh`](install/kde.sh) applies the Plasma-side settings with `kwriteconfig6` (same keyboard layouts, numlock, and the GTK settings sync service turned off so Plasma does not rewrite the GTK files Noctalia renders).
+- [`autostart/blueman.desktop`](.config/autostart/blueman.desktop) hides the Blueman applet in Plasma, where Bluedevil already runs.
+
+GPU handling needs nothing extra: KWin follows the boot GPU, i.e. the MUX, and `gfx`, `prime-run` and the nvidia-powerd timer are desktop-independent.
+
 ### Hyprland coniguration
 
 > The live setup is [`~/.config/hypr-noctalia/`](.config/hypr-noctalia/) (Noctalia shell, two-GPU handling via `gfx`); see its [README](.config/hypr-noctalia/README.md). `~/.config/hypr` is a symlink that `switch-to-noctalia` / `switch-to-classic` flip between it and the older waybar setup described below.

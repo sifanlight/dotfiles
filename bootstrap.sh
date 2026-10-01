@@ -124,7 +124,13 @@ _heading "Linking Scripts into ~/.local/bin"
 _heading "Shell Configuration"
 "$DIR/install/zsh.sh"
 
-# Step 5: Update font cache
+# Step 5: KDE Plasma settings (only if Plasma is installed)
+if command -v kwriteconfig6 >/dev/null 2>&1; then
+    _heading "KDE Plasma Settings"
+    "$DIR/install/kde.sh"
+fi
+
+# Step 6: Update font cache
 if command -v fc-cache >/dev/null 2>&1; then
     _info "Refreshing font cache..."
     fc-cache -f >/dev/null 2>&1 || true
