@@ -29,12 +29,13 @@ hl.gesture({ fingers = 4, direction = "pinchin", action = function ()
     hl.dispatch(hl.dsp.window.fullscreen({ action="unset" })) 
 end})
 
--- Hyprshell workspace overview on 4-finger swipe up
+-- Move the active window to the next/previous workspace and follow it on a
+-- 4-finger vertical swipe. Fires once the swipe completes; the 3-finger
+-- swipe stays the live, follow-the-finger workspace switch.
 hl.gesture({ fingers = 4, direction = "up", action = function ()
-    hl.exec_cmd("hyprshell socat '\"OpenOverview\"'")
+    hl.dispatch(hl.dsp.window.move({ workspace = "r+1" }))
 end})
 
--- Close hyprshell workspace overview on 4-finger swipe down
 hl.gesture({ fingers = 4, direction = "down", action = function ()
-    hl.exec_cmd('sh -c "hyprctl layers | grep -q hyprshell_overview && hyprshell socat \\"\\"OpenOverview\\"\\""')
+    hl.dispatch(hl.dsp.window.move({ workspace = "r-1" }))
 end})

@@ -184,11 +184,50 @@ local function drm_path(name)
     return dir
 end
 
--- Native resolution of the output's preferred mode. The first line of DRM's
--- `modes` is the preferred one, in WxH form. Like `status`, this answers
--- during config parse and for outputs Hyprland has disabled, which
--- hl.get_monitors() does not.
-local function native_size(name)
+-- Raw EDID of an output, or nil. Like `status`, this answers during config
+-- parse and for outputs Hyprland has disabled, which hl.get_monitors()
+-- does not.
+local function read_edid(name)
+    local dir = drm_path(name)
+    if not dir then return nil end
+
+    local f = io.open(dir .. "/edid", "rb")
+    if not f then return nil end
+    local edid = f:read("a")
+    f:close()
+    if not edid or edid == "" then return nil end
+    return edid
+end
+
+-- Native resolution of the output, from the EDID's first detailed timing
+-- descriptor (bytes 54..71), which is the panel's preferred mode on every
+-- monitor made this century. Pixel clock 0 marks a descriptor that holds
+-- text instead of a timing.
+--
+-- This is read from the EDID rather than from DRM's `modes` file because
+-- the latter is only as fresh as the kernel's last probe: a panel that was
+-- off when its cable was plugged in can sit at "1024x768 800x600 640x480"
+-- in /sys for the rest of the session while Hyprland, which probes for
+-- itself, drives it at 1920x1080. The row was then packed 896 px too
+-- tight and the two Dells overlapped (seen 2026-10-08).
+local function edid_size(name)
+    local edid = read_edid(name)
+    if not edid or #edid < 72 then return nil end
+
+    local function byte(i) return edid:byte(i + 1) end  -- EDID offsets are 0-based
+
+    local pixclk = byte(54) + byte(55) * 256
+    if pixclk == 0 then return nil end
+
+    local w = byte(56) + math.floor(byte(58) / 16) * 256
+    local h = byte(59) + math.floor(byte(61) / 16) * 256
+    if w == 0 or h == 0 then return nil end
+    return w, h
+end
+
+-- Fallback for a panel with no usable EDID: the first line of DRM's `modes`
+-- is the preferred one, in WxH form, when the kernel has one.
+local function modes_size(name)
     local dir = drm_path(name)
     if not dir then return nil end
 
@@ -202,17 +241,17 @@ local function native_size(name)
     return tonumber(w), tonumber(h)
 end
 
+local function native_size(name)
+    local w, h = edid_size(name)
+    if w then return w, h end
+    return modes_size(name)
+end
+
 -- Where a panel sits on the desk, matched against its raw EDID. Returns the
 -- DESK entry and its rank, or nil for a monitor nobody has described.
 local function desk_entry(name)
-    local dir = drm_path(name)
-    if not dir then return nil end
-
-    local f = io.open(dir .. "/edid", "rb")
-    if not f then return nil end
-    local edid = f:read("a")
-    f:close()
-    if not edid or edid == "" then return nil end
+    local edid = read_edid(name)
+    if not edid then return nil end
 
     for rank, entry in ipairs(DESK) do
         if edid:find(entry.edid, 1, true) then return entry, rank end

@@ -32,8 +32,8 @@ hl.config({
         -- https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/
         allow_tearing = true,
 
-        layout = "dwindle",
-        -- layout = "scrolling",
+        -- layout = "dwindle",
+        layout = "scrolling",
     },
 
     dwindle = {
@@ -99,7 +99,17 @@ hl.config({
         rounding = 0,
 	rounding_power = 2,
 
-        dim_inactive = false,
+        -- Tell the focused window apart from the rest. Unfocused windows drop
+        -- to 92% and Hyprland's blur fills in behind them; the focused one
+        -- stays solid. `opacity` is a multiplier on the window's own alpha,
+        -- so a window rule that sets `opacity` replaces both of these - the
+        -- Ghostty and Spotify rules in rules.lua carry the same 0.92 step.
+        -- The `opaque` tag (SUPER + SHIFT + backslash) still forces 1.0.
+        active_opacity   = 1.0,
+        inactive_opacity = 0.72,
+        fullscreen_opacity = 1.0,
+
+        dim_inactive = true,
         dim_strength = 0.12,
 
         -- Master switch for blur. Noctalia's layer rule in rules.lua opts its
@@ -109,7 +119,7 @@ hl.config({
         -- transparency.
         blur = {
             enabled = true,
-            size = 3,
+            size = 10,
             passes = 2,
             vibrancy = 0.1696,
         },
@@ -130,6 +140,7 @@ hl.config({
         follow_mouse = 1,
         sensitivity = 0.0,
         numlock_by_default = true,
+		kb_options = "ctrl:nocaps",
 
         -- English and Persian. "us" is first, so it is what every keyboard
         -- comes up in at boot and after a reload.

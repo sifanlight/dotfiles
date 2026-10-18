@@ -161,7 +161,7 @@ end)
 hl.bind("SUPER + O",            hl.dsp.group.toggle()) -- Create windows group
 hl.bind("SUPER + bracketleft",  hl.dsp.group.prev())   -- Show previous window in group
 hl.bind("SUPER + bracketright", hl.dsp.group.next())   -- Show next window in group
-hl.bind("SUPER + L", hl.dsp.window.move({ out_of_group = true}))
+hl.bind("SUPER + SHIFT + O", hl.dsp.window.move({ out_of_group = true})) -- Move window out of group
 
 -- Noctalia IPC controls
 local noctalia_msg = "noctalia msg "
@@ -175,10 +175,10 @@ hl.bind("ALT + tab",             run(noctalia_msg .. "window-switcher"))        
 hl.bind("SUPER + ESCAPE",        run(noctalia_msg .. "session lock"))                -- Session lock / power
 hl.bind("SUPER + V",             run(noctalia_msg .. "panel-toggle clipboard"))      -- Clipboard history
 hl.bind("SUPER + E",             run(noctalia_msg .. "panel-toggle session"))        -- Session menu (lock/suspend/reboot/shutdown)
-hl.bind("SUPER + K",             run(noctalia_msg .. "panel-toggle wallpaper"))      -- Wallpaper picker
+hl.bind("SUPER + ALT + K",       run(noctalia_msg .. "panel-toggle wallpaper"))      -- Wallpaper picker
 hl.bind("SUPER + G",             run(noctalia_msg .. "caffeine-toggle"))             -- Keep the machine awake
-hl.bind("SUPER + H",             run(noctalia_msg .. "nightlight-force-toggle"))     -- Force night light on/off
-hl.bind("SUPER + J",             run(noctalia_msg .. "notification-dnd-toggle"))     -- Do not disturb
+hl.bind("SUPER + ALT + H",       run(noctalia_msg .. "nightlight-force-toggle"))     -- Force night light on/off
+hl.bind("SUPER + ALT + J",       run(noctalia_msg .. "notification-dnd-toggle"))     -- Do not disturb
 
 -- Wallpapers are Noctalia's now, cycling included; auto_walls no longer runs.
 hl.bind("SUPER + Y",             run(noctalia_msg .. "wallpaper-random"))            -- Random wallpaper
@@ -217,11 +217,14 @@ hl.bind("SUPER + CTRL + I",          run_script("screenrec"))                   
 hl.bind("SUPER + CTRL + SHIFT + I",  run_script("screenrec --select"))           -- Screen record selected area
 
 
--- Move focus:   SUPER + arrow keys
+-- Move focus:   SUPER + H/J/K/L (vim keys)
 -- Move windows: SUPER + CTRL + arrow keys
 -- Swap windows: SUPER + SHIFT + arrow keys
+for key, dir in pairs({ H = "left", J = "down", K = "up", L = "right" }) do
+    hl.bind("SUPER + " .. key,          hl.dsp.focus({ direction = dir }))
+end
+
 for _, dir in ipairs({ "left", "right", "up", "down" }) do
-    hl.bind("SUPER + " .. dir,          hl.dsp.focus({ direction = dir }))
     hl.bind("SUPER + CTRL + " .. dir,   hl.dsp.window.move({ direction = dir }))
     hl.bind("SUPER + SHIFT + " .. dir,  hl.dsp.window.swap({ direction = dir }))
 end
@@ -245,7 +248,7 @@ end
 -- Toggle a tag on the active window. A bare name toggles; "+name" / "-name"
 -- would set / unset. What each tag does is defined by the matching
 -- `match = { tag = ... }` rules in rules.lua.
-hl.bind("SUPER + backslash",         hl.dsp.window.tag({ tag = "bordered" }))
+hl.bind("SUPER + backslash",         hl.dsp.window.tag({ tag = "borderless" }))
 hl.bind("SUPER + SHIFT + backslash", hl.dsp.window.tag({ tag = "opaque" }))
 
 -- Special workspace
@@ -281,6 +284,26 @@ hl.bind("XF86PowerOff",         run("noctalia msg panel-toggle session"))
 -- Move/resize windows with SUPER + LMB/RMB and dragging
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true })
+
+-- SUPER + mouse side buttons step focus through the windows on the workspace
+-- (back = right, forward = left). A mouse-triggered focus change doesn't warp
+-- the cursor, so follow_mouse would hand focus straight back to the window
+-- under it; put the cursor in the middle of the new window instead.
+local function focus_and_warp(dir)
+    return function ()
+        local before = hl.get_active_window()
+        hl.dispatch(hl.dsp.focus({ direction = dir }))
+        local w = hl.get_active_window()
+        if not w or (before and before.address == w.address) then return end
+        hl.dispatch(hl.dsp.cursor.move({
+            x = w.at.x + w.size.x // 2,
+            y = w.at.y + w.size.y // 2,
+        }))
+    end
+end
+
+hl.bind("SUPER + mouse:275", focus_and_warp("right"))
+hl.bind("SUPER + mouse:276", focus_and_warp("left"))
 
 
 

@@ -46,10 +46,12 @@ hl.window_rule({ stay_focused = true, match = { title = "^(Rename device)$", cla
 -- SUPER + SHIFT + backslash). Tag rules re-evaluate on toggle, so these take
 -- effect and undo immediately on the focused window.
 hl.window_rule({
-    name = "Tag: bordered",
-    match = { tag = "bordered" },
-    -- general.border_size is 0 in options.lua, so this is the only way a
-    -- window gets a border. Colors come from general.col.*_border.
+    name = "Tag: borderless",
+    match = { tag = "borderless" },
+    -- Borders are on by default (general.border_size in options.lua), so
+    -- the toggle takes one away. Colors come from general.col.*_border,
+    -- which noctalia.lua overrides with the wallpaper palette when the
+    -- Noctalia "hyprland" template is on.
     border_size = 2,
 })
 
@@ -156,8 +158,20 @@ hl.window_rule({
 
     -- 1 is a multiplier on the window's own alpha, not a force-opaque:
     -- Ghostty's background-opacity (0.7, matching the Noctalia bar) still
-    -- shows through, and Hyprland's blur fills in behind it.
-    opacity = 1,
+    -- shows through, and Hyprland's blur fills in behind it. Two values are
+    -- active and inactive; the second mirrors decoration.inactive_opacity
+    -- in options.lua, because a rule's `opacity` replaces both globals.
+    opacity = "1 0.92",
+})
+
+hl.window_rule({
+    name = "PdfCraft touchpad scroll",
+    match = { class = "ai\\.storyteller\\.pdfcraft" },
+
+    -- input.touchpad.scroll_factor (options.lua) is 0.2, tuned for browsers
+    -- that already scroll fast. PdfCraft is egui, which uses the raw deltas,
+    -- so at 0.2 it barely moves. This replaces the factor for this window.
+    scroll_touchpad = 1.0,
 })
 
 hl.window_rule({
@@ -208,7 +222,9 @@ hl.window_rule({
     -- shows an opaque #121212 - so the alpha has to come from the compositor.
     -- This dims album art and text along with the background, which is why it
     -- sits higher than Ghostty's 0.7. Hyprland blurs behind it on its own.
-    opacity = "0.8",
+    -- Second value is unfocused: 0.8 stepped down by the same 0.92 as
+    -- decoration.inactive_opacity in options.lua.
+    opacity = "0.8 0.74",
 })
 
 hl.window_rule({
@@ -251,4 +267,13 @@ hl.window_rule({
     
     float = true,
     no_initial_focus = true
+})
+
+hl.window_rule({
+    name = "Tag: opaque, unfocused too",
+    match = { tag = "opaque" },
+    -- `opaque` above only drops the app's own alpha; the inactive_opacity
+    -- multiplier and the Ghostty/Spotify `opacity` rules still fade the
+    -- window when it loses focus. This rule sits last so it beats them.
+    opacity = "1 override 1 override",
 })
