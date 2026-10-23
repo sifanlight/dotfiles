@@ -4,9 +4,9 @@ require("config.startup")
 require("config.binds")
 require("config.options")
 require("config.gestures")
+require("config.touch")
 require("config.rules")
 require("config.animations")
-require("config.oled")
 
 -- For Noctalia Color templates. noctalia.lua is rendered by Noctalia's
 -- "hyprland" template (it is gitignored), so on a fresh install it does not

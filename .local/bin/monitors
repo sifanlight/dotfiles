@@ -12,6 +12,7 @@
 #   monitors mirror          externals mirror the internal panel
 #   monitors next            cycle to the next profile
 #   monitors rescue          force everything back onto the laptop panel
+#   monitors portrait        toggle the laptop panel between landscape and portrait
 #   monitors status          what is set, and what is actually lit
 
 set -uo pipefail
@@ -133,6 +134,7 @@ case "${1-}" in
     '')        menu ;;
     next)      eval_lua 'MONITORS.next()' ;;
     rescue)    eval_lua 'MONITORS.rescue()' ;;
+    portrait)  eval_lua 'MONITORS.portrait()' ;;
     apply)     eval_lua 'MONITORS.apply()' ;;
     status)    status ;;
     -h|--help) awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0" ;;

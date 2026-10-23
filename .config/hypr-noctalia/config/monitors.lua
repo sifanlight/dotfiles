@@ -67,11 +67,18 @@ local EXTERNAL_PLACEMENT = "auto-left"
 local DESK = {
     { edid = "F4FJGS2", transform = 0, workspaces = { 1, 2, 3 } },  -- Dell SE2719H (HDMI-A-1), left
     { edid = "25FJGS2", transform = 0, workspaces = { 4, 5 } },     -- Dell SE2719H (DP-5), right
-    { edid = "HNAY802838", transform = 0, workspaces = { 1, 2 }, position = "up" },  -- Samsung Odyssey G5 (HDMI-A-1), above
+    { edid = "HNAY802838", transform = 0, workspaces = { 1, 2 , 3}, position = "up" },  -- Samsung Odyssey G5 (HDMI-A-1), above
+    -- Its EDID carries no serial string, so the model has to do.
+    -- 4 and 5 are left unclaimed, so they fall back to the internal panel.
+    { edid = "LEN P27h-10", transform = 0, workspaces = { 1, 2, 3 }, position = "up" },  -- Lenovo P27h-10 (DP-4), above
 }
 
--- Internal panel is 2880x1620 native; scale 1.5 gives exactly 1920x1080 logical pixels.
+-- Surface Pro 9 panel is 2880x1920 native, run at scale 1.88.
 local INTERNAL_SCALE = "1.5"
+
+-- The panel reports 2880x1920@60 as "preferred" even though it does 120Hz,
+-- so ask for the highest refresh rate instead.
+local INTERNAL_MODE  = "highrr"
 
 -- When every real output is disabled, Hyprland conjures this headless
 -- placeholder so it does not die. It keeps the compositor alive but shows
@@ -83,6 +90,14 @@ local STATE_FILE = STATE_DIR .. "/monitor-profile"
 local DEFAULT    = "extended"
 
 local PROFILES = { "extended", "external", "internal", "mirror" }
+
+-- Portrait mode for reading: rotates only the internal panel, whatever the
+-- profile, and leaves the externals alone. Toggled with SUPER+ALT+P or
+-- `monitors portrait`, and remembered across reloads like the profile.
+-- 1 = 90 degrees, 3 = 270: flip this if the panel comes up upside down for
+-- the way you hold the tablet.
+local PORTRAIT_TRANSFORM = 1
+local PORTRAIT_FILE      = STATE_DIR .. "/monitor-portrait"
 
 --------------------------------------------------------------------------
 -- state file
@@ -109,6 +124,39 @@ local function write_profile(name)
     if not f then return end
     f:write(name .. "\n")
     f:close()
+end
+
+local function read_portrait()
+    local f = io.open(PORTRAIT_FILE, "r")
+    if not f then return false end
+    local value = f:read("l")
+    f:close()
+    return value == "on"
+end
+
+local function write_portrait(on)
+    os.execute("mkdir -p '" .. STATE_DIR .. "'")
+    local f = io.open(PORTRAIT_FILE, "w")
+    if not f then return end
+    f:write((on and "on" or "off") .. "\n")
+    f:close()
+end
+
+local function internal_transform()
+    return read_portrait() and PORTRAIT_TRANSFORM or 0
+end
+
+-- Touch and pen report coordinates in the panel's native orientation, so
+-- they have to be turned with it, or a tap lands in the wrong place. Both
+-- are pinned to the panel: left on auto they follow whichever monitor has
+-- focus, and a tap on the Surface moves the pointer on the external.
+local function apply_input_transform(transform)
+    pcall(hl.config, {
+        input = {
+            touchdevice = { output = INTERNAL, transform = transform },
+            tablet      = { output = INTERNAL, transform = transform },
+        },
+    })
 end
 
 --------------------------------------------------------------------------
@@ -264,11 +312,12 @@ local function transform_of(name)
     return (entry and entry.transform) or 0
 end
 
--- Logical size of the internal panel, i.e. after its scale. 2880x1620 / 1.5.
+-- Logical size of the internal panel, i.e. after its scale.
 local function internal_size()
     local w, h = native_size(INTERNAL)
     local scale = tonumber(INTERNAL_SCALE) or 1
     if not w or scale <= 0 then return 1920, 1080 end
+    if internal_transform() % 2 == 1 then w, h = h, w end
     return math.floor(w / scale + 0.5), math.floor(h / scale + 0.5)
 end
 
@@ -365,9 +414,10 @@ local function plan(profile, externals, has_internal)
     if has_internal then
         specs[#specs + 1] = {
             output   = INTERNAL,
-            mode     = "preferred",
+            mode     = INTERNAL_MODE,
             position = "0x0",
             scale    = INTERNAL_SCALE,
+            transform = internal_transform(),
             -- Must be `false`, not `0`: in Lua 0 is truthy, so `vrr = 0`
             -- reads as "enable" and turns VRR on - the opposite of the
             -- intent. misc.vrr in options.lua is the other half of this.
@@ -426,7 +476,8 @@ local function ensure_lit(specs)
 
     for _, s in ipairs(specs) do
         if s.output == INTERNAL then
-            s.disabled, s.mode, s.position, s.scale = false, "preferred", "0x0", INTERNAL_SCALE
+            s.disabled, s.mode, s.position, s.scale = false, INTERNAL_MODE, "0x0", INTERNAL_SCALE
+            s.transform = internal_transform()
             return specs
         end
     end
@@ -558,8 +609,11 @@ local busy    = false
 local function signature(profile, specs)
     local parts = { profile }
     for _, s in ipairs(specs) do
+        -- transform is part of it so a portrait toggle is not mistaken for
+        -- a no-op.
         parts[#parts + 1] = s.output .. "="
             .. (s.disabled and "off" or tostring(s.position or "auto"))
+            .. "/" .. tostring(s.transform or 0)
     end
     table.sort(parts, nil)
     return table.concat(parts, ";")
@@ -605,6 +659,8 @@ local function apply(requested, announce)
         if s.disabled then pcall(hl.monitor, s) end
     end
 
+    apply_input_transform(internal_transform())
+
     -- After the specs, so a workspace is never sent to a monitor that is
     -- still dark.
     apply_workspaces(effective, externals, has_internal)
@@ -624,8 +680,9 @@ end
 -- Base rules, so an output that appears before the handler runs still comes
 -- up with something sane. The empty output is Hyprland's catch-all; it must
 -- never be disabled, or an unrecognised monitor arrives dark.
-hl.monitor({ output = INTERNAL, mode = "preferred", position = "0x0",
-             scale = INTERNAL_SCALE, vrr = false })
+hl.monitor({ output = INTERNAL, mode = INTERNAL_MODE, position = "0x0",
+             scale = INTERNAL_SCALE, transform = internal_transform(), vrr = false })
+apply_input_transform(internal_transform())
 hl.monitor({ output = "", mode = "preferred", position = EXTERNAL_PLACEMENT, scale = "1" })
 
 --------------------------------------------------------------------------
@@ -669,10 +726,18 @@ function MONITORS.apply()
     apply(read_profile(), false)
 end
 
+function MONITORS.portrait()
+    local on = not read_portrait()
+    write_portrait(on)
+    apply(read_profile(), false)
+    notify("Monitors: internal panel " .. (on and "portrait" or "landscape"), 5)
+end
+
 -- Panic button. Keybinds still work when the screen is dark, so this is the
 -- way back without switching TTY.
 function MONITORS.rescue()
     applied = nil
+    write_portrait(false)
     MONITORS.set("internal")
 end
 

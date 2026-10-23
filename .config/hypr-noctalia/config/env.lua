@@ -13,76 +13,9 @@ hl.env("TERMINAL", "ghostty")
 hl.env("BROWSER", "helium-browser")
 hl.env("SCRIPTS", HOME .. "/.local/bin")
 
--- GPU used for hyprland.
---
--- This laptop has a MUX. The GPU-specific environment (AQ_DRM_DEVICES order,
--- VA-API driver) lives in one of two files:
---   config/gpu-hybrid.lua  <- supergfxctl Hybrid      (panel on Intel)
---   config/gpu-nvidia.lua  <- supergfxctl AsusMuxDgpu (panel on the RTX)
--- config/gpu.lua is a symlink to the one `gfx hybrid` / `gfx nvidia`
--- (~/.local/bin/gfx) last chose; that script also asks supergfxd to flip the
--- MUX and reboots, since the MUX only changes at boot.
---
--- Safety net: the symlink is a promise, the MUX register is the truth. If the
--- two disagree at startup (BIOS change, supergfxctl run by hand, forgotten
--- reboot), naming the wrong card first makes every frame get rendered on one
--- GPU and copied to the other for the panel. So the register wins when it is
--- readable, and a notification says which file was loaded and how to
--- realign. When the register is unreadable (driver change, other laptop) the
--- symlink is used as-is.
-local GPU_FILES = { hybrid = "config.gpu-hybrid", nvidia = "config.gpu-nvidia" }
-
-local function read_file(path)
-    local f = io.open(path, "r")
-    if not f then return nil end
-    local data = f:read("*a")
-    f:close()
-    return data
-end
-
--- asus-wmi exposes the MUX itself: 0 = dGPU wired to the panel (AsusMuxDgpu),
--- 1 = iGPU wired to the panel (Hybrid, or Integrated with the dGPU off).
-local function mux_mode()
-    local v = read_file("/sys/devices/platform/asus-nb-wmi/gpu_mux_mode")
-    if not v then return nil end
-    if v:match("^%s*0%s*$") then return "nvidia" end
-    if v:match("^%s*1%s*$") then return "hybrid" end
-end
-
--- What config/gpu.lua currently points at, from the symlink target's name.
-local function linked_mode()
-    local here = HOME .. "/.config/hypr/config"
-    local ok, src = pcall(function() return debug.getinfo(1, "S").source end)
-    if ok and type(src) == "string" then
-        here = src:match("^@(.*)/[^/]*$") or here
-    end
-    local ok2, target = pcall(function()
-        local p = io.popen("readlink -- '" .. here .. "/gpu.lua' 2>/dev/null")
-        if not p then return nil end
-        local out = p:read("*l")
-        p:close()
-        return out
-    end)
-    if ok2 and type(target) == "string" then
-        return target:match("gpu%-(%w+)%.lua$")
-    end
-end
-
-local linked   = linked_mode()
-local detected = mux_mode()
-local chosen   = detected or linked or "hybrid"
-
-require(GPU_FILES[chosen])
-
-if detected and linked and detected ~= linked then
-    hl.on("hyprland.start", function()
-        hl.exec_cmd(string.format(
-            "notify-send -u critical -a Hyprland 'GPU config out of sync' " ..
-            "'The MUX is in %s mode but config/gpu.lua points at %s. " ..
-            "Loaded gpu-%s.lua for this session. Run: gfx %s'",
-            detected, linked, detected, detected))
-    end)
-end
+-- GPU used for hyprland. The MUX / gpu-*.lua switching in the dotfiles repo is
+-- for the ASUS laptop; this Surface Pro 9 has a single Intel iGPU.
+-- hl.env("AQ_DRM_DEVICES", "/dev/dri/card1")
 
 -- Disable mgpu buffer sync?? no clue what it does. 
 -- hl.env("AQ_MGPU_NO_EXPLICIT", "1")
@@ -93,7 +26,7 @@ hl.env("HYPRLAND_NO_RT", "1")
 -- Wayland realted variables
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "wayland")
 hl.env("DESKTOP_SESSION", "Hyprland")
-hl.env("XCURSOR_THEME", "WhiteSur-cursors")
+hl.env("XCURSOR_THEME", "Bibata-Modern-Ice")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("XDG_SESSION_TYPE", "wayland")
 

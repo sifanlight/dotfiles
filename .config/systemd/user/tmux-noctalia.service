@@ -1,0 +1,8 @@
+[Unit]
+Description=Re-theme running tmux servers with the current Noctalia palette
+
+[Service]
+Type=oneshot
+# Noctalia's own hook runs right after the file is written; let it finish first.
+ExecStartPre=/bin/sleep 1
+ExecStart=%h/.local/bin/tmux-noctalia-reload

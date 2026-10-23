@@ -16,7 +16,7 @@
 # Follows the desktop light/dark preference on both macOS and KDE Plasma.
 # The two palettes are identical apart from the background, because the
 # original iTerm2 profile used a dark palette for light mode too.
-theme = light:iterm2-modern-light,dark:iterm2-modern-dark
+theme = noctalia
 
 # ─── Font ──────────────────────────────────────────────────────────────────
 # iTerm2: "JetBrainsMonoNFM-SemiBold 14"
@@ -51,7 +51,7 @@ window-height = 40
 # iTerm2 Transparency was 0 (fully opaque), so its blur setting did nothing.
 # Uncomment both for a translucent blurred window. On KDE this needs the
 # Blur desktop effect enabled (System Settings > Desktop Effects).
-# background-opacity = 0.92
+background-opacity = 0.7
 # background-blur    = 12
 
 # iTerm2 "Prompt Before Closing" was off

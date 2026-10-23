@@ -190,7 +190,16 @@ hl.bind("SUPER + ALT + SPACE",    run(noctalia_msg .. "keyboard-layout-cycle")) 
 hl.bind("SUPER + ALT + M",        run_script("monitors"))                             -- Monitor profile picker (rofi)
 hl.bind("SUPER + CTRL + M",       run_script("monitors next"))                        -- Cycle monitor layout
 hl.bind("SUPER + CTRL + SHIFT + M", run_script("monitors rescue"))                    -- Rescue: laptop panel only
-hl.bind("SUPER + CTRL + O",       run_script("oled-care toggle"))                     -- Toggle OLED burn-in care
+hl.bind("SUPER + ALT + P",        run_script("monitors portrait"))                    -- Toggle Surface panel portrait (reading)
+
+-- Flex Keyboard detached / attached. The on-screen keyboard only comes on
+-- when it is detached and no external monitor is connected, so plugging or
+-- unplugging a monitor has to re-check too.
+local tablet_switch = "Microsoft Surface POS Tablet Mode Switch"
+hl.bind("switch:on:"  .. tablet_switch, run_script("tablet-mode on"),  { locked = true })
+hl.bind("switch:off:" .. tablet_switch, run_script("tablet-mode off"), { locked = true })
+hl.on("monitor.added",   function() hl.exec_cmd(scripts .. "tablet-mode refresh") end)
+hl.on("monitor.removed", function() hl.exec_cmd(scripts .. "tablet-mode refresh") end)
 hl.bind("SUPER + SHIFT + Y",      run(noctalia_msg .. "theme-mode-toggle"))           -- Switch between dark/light mode
 hl.bind("SUPER + MINUS",          run(noctalia_msg .. "volume-down 2"), {repeating = true}) -- Decrease volume
 hl.bind("SUPER + EQUAL",          run(noctalia_msg .. "volume-up 2"), {repeating = true})   -- Increase volume
@@ -218,22 +227,19 @@ hl.bind("SUPER + CTRL + SHIFT + I",  run_script("screenrec --select"))          
 
 
 -- Move focus:   SUPER + H/J/K/L (vim keys)
--- Move windows: SUPER + CTRL + arrow keys
--- Swap windows: SUPER + SHIFT + arrow keys
+-- Move windows: SUPER + CTRL + H/J/K/L
+-- Swap windows: SUPER + SHIFT + H/J/K/L
 for key, dir in pairs({ H = "left", J = "down", K = "up", L = "right" }) do
     hl.bind("SUPER + " .. key,          hl.dsp.focus({ direction = dir }))
+    hl.bind("SUPER + CTRL + " .. key,   hl.dsp.window.move({ direction = dir }))
+    hl.bind("SUPER + SHIFT + " .. key,  hl.dsp.window.swap({ direction = dir }))
 end
 
-for _, dir in ipairs({ "left", "right", "up", "down" }) do
-    hl.bind("SUPER + CTRL + " .. dir,   hl.dsp.window.move({ direction = dir }))
-    hl.bind("SUPER + SHIFT + " .. dir,  hl.dsp.window.swap({ direction = dir }))
-end
-
--- Resize active window
-hl.bind("SUPER + CTRL + SHIFT + left",  hl.dsp.window.resize({ x = -70, y = 0,   relative = true }))
-hl.bind("SUPER + CTRL + SHIFT + right", hl.dsp.window.resize({ x =  70, y = 0,   relative = true }))
-hl.bind("SUPER + CTRL + SHIFT + up",    hl.dsp.window.resize({ x = 0,   y = -70, relative = true }))
-hl.bind("SUPER + CTRL + SHIFT + down",  hl.dsp.window.resize({ x = 0,   y =  70, relative = true }))
+-- Resize active window: SUPER + CTRL + SHIFT + H/J/K/L
+hl.bind("SUPER + CTRL + SHIFT + H", hl.dsp.window.resize({ x = -70, y = 0,   relative = true }))
+hl.bind("SUPER + CTRL + SHIFT + L", hl.dsp.window.resize({ x =  70, y = 0,   relative = true }))
+hl.bind("SUPER + CTRL + SHIFT + K", hl.dsp.window.resize({ x = 0,   y = -70, relative = true }))
+hl.bind("SUPER + CTRL + SHIFT + J", hl.dsp.window.resize({ x = 0,   y =  70, relative = true }))
 
 -- Switch workspaces: SUPER + [1-workspaces]
 -- Move active window to workspace: SUPER + SHIFT [1-workspaces]
@@ -279,7 +285,7 @@ hl.bind("XF86MonBrightnessDown",run("noctalia msg brightness-down 5"),          
 hl.bind("XF86Launch1",          run("noctalia msg power-cycle"))
 hl.bind("XF86Calculator",       run("qalculate-gtk"))
 hl.bind("XF86Launch4",          run("rog-control-center"))
-hl.bind("XF86PowerOff",         run("noctalia msg panel-toggle session"))
+-- XF86PowerOff left unbound: logind suspends on the power key (50-power-keys.conf)
 
 -- Move/resize windows with SUPER + LMB/RMB and dragging
 hl.bind("SUPER + mouse:272", hl.dsp.window.drag(),   { mouse = true })

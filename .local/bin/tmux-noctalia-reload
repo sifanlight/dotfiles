@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Re-theme every running tmux server after Noctalia renders a new palette.
+#
+# Noctalia's own tmux hook only re-sources themes/noctalia.conf, which leaves
+# Catppuccin's bar on the old colors: Catppuccin bakes part of the palette into
+# its options when it loads, and only sets them while they are unset. So clear
+# the @catppuccin_* and @thm_* options and source the whole tmux.conf again;
+# tmux.conf re-sets the user options and Catppuccin recomputes the rest from
+# the new @thm_* values (see noctalia-catppuccin.conf).
+#
+# Run by ~/.config/systemd/user/tmux-noctalia.path whenever the theme changes.
+
+config="$HOME/.config/tmux/tmux.conf"
+socket_dir="${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)"
+
+for socket in "$socket_dir"/*; do
+    [[ -S $socket ]] || continue
+
+    tmux -N -S "$socket" show -gq @thm_bg >/dev/null 2>&1 || continue
+
+    tmux -N -S "$socket" show -g 2>/dev/null |
+        awk '$1 ~ /^@(catppuccin_|thm_)/ { print $1 }' |
+        while read -r option; do
+            tmux -N -S "$socket" set -gu "$option"
+        done
+
+    tmux -N -S "$socket" source-file "$config"
+done

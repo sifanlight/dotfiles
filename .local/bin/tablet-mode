@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Tablet mode: what changes when the Flex Keyboard comes off.
+#
+# Called by the switch binds in ~/.config/hypr/config/binds.lua on the
+# "Microsoft Surface POS Tablet Mode Switch", and on monitor hotplug.
+#
+#   tablet-mode on       keyboard detached (remembered)
+#   tablet-mode off      keyboard attached (remembered)
+#   tablet-mode refresh  re-check after a monitor was plugged or unplugged
+#   tablet-mode toggle   show/hide the on-screen keyboard by hand
+#   tablet-mode status   what is remembered, and what that means right now
+#
+# The on-screen keyboard pops up on text fields only while the keyboard is
+# detached AND no external monitor is connected. Detaching the keyboard at
+# the desk, with a monitor plugged in, leaves it off.
+#
+# The on-screen keyboard is squeekboard (pacman -S squeekboard). It only
+# auto-shows while GNOME's screen-keyboard-enabled key is true, which is the
+# switch this script flips. Without squeekboard installed it does nothing.
+
+set -uo pipefail
+
+KEY=(org.gnome.desktop.a11y.applications screen-keyboard-enabled)
+INTERNAL="eDP-1"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/hypr"
+STATE_FILE="$STATE_DIR/tablet-mode"
+
+have_osk() { command -v squeekboard >/dev/null; }
+
+osk_running() { busctl --user status sm.puri.OSK0 >/dev/null 2>&1; }
+
+start_osk() {
+    osk_running && return 0
+    setsid -f squeekboard >/dev/null 2>&1
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        osk_running && return 0
+        sleep 0.2
+    done
+    return 1
+}
+
+set_visible() {
+    busctl --user call sm.puri.OSK0 /sm/puri/OSK0 sm.puri.OSK0 SetVisible b "$1" >/dev/null 2>&1
+}
+
+# Same source monitors.lua trusts: /sys sees a plugged-in panel whether or
+# not Hyprland has it lit, so the `external` and `mirror` profiles count too.
+external_connected() {
+    local entry name
+    for entry in /sys/class/drm/card*-*/status; do
+        [[ -r $entry ]] || continue
+        name=${entry%/status}; name=${name##*/}; name=${name#card*-}
+        [[ $name == "$INTERNAL" ]] && continue
+        [[ $(<"$entry") == connected ]] && return 0
+    done
+    return 1
+}
+
+# Unknown (fresh boot, no switch event yet) counts as attached.
+detached() {
+    local value=''
+    [[ -r $STATE_FILE ]] && read -r value < "$STATE_FILE"
+    [[ $value == on ]]
+}
+
+remember() {
+    mkdir -p "$STATE_DIR"
+    printf '%s\n' "$1" > "$STATE_FILE"
+}
+
+wanted() { detached && ! external_connected; }
+
+apply() {
+    have_osk || return 0
+    if wanted; then
+        gsettings set "${KEY[@]}" true
+        start_osk
+    else
+        gsettings set "${KEY[@]}" false
+        osk_running && set_visible false
+    fi
+}
+
+case "${1-}" in
+    on|off)
+        remember "$1"
+        apply
+        ;;
+    refresh)
+        # Hotplug settles over a few frames; let /sys catch up.
+        sleep 0.5
+        apply
+        ;;
+    toggle)
+        have_osk || exit 0
+        start_osk || exit 1
+        visible=$(busctl --user get-property sm.puri.OSK0 /sm/puri/OSK0 sm.puri.OSK0 Visible 2>/dev/null)
+        if [[ $visible == "b true" ]]; then set_visible false; else set_visible true; fi
+        ;;
+    status)
+        detached && echo "keyboard: detached" || echo "keyboard: attached"
+        external_connected && echo "external: connected" || echo "external: none"
+        wanted && echo "on-screen keyboard: auto" || echo "on-screen keyboard: off"
+        have_osk || echo "(squeekboard not installed)"
+        ;;
+    *)
+        awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0"
+        ;;
+esac

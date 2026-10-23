@@ -168,9 +168,9 @@ hl.window_rule({
     name = "PdfCraft touchpad scroll",
     match = { class = "ai\\.storyteller\\.pdfcraft" },
 
-    -- input.touchpad.scroll_factor (options.lua) is 0.2, tuned for browsers
+    -- input.touchpad.scroll_factor (options.lua) is 0.5, tuned for browsers
     -- that already scroll fast. PdfCraft is egui, which uses the raw deltas,
-    -- so at 0.2 it barely moves. This replaces the factor for this window.
+    -- so at a low factor it barely moves. This replaces the factor for this window.
     scroll_touchpad = 1.0,
 })
 

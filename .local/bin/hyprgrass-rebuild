@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Rebuild the hyprgrass touch-gesture plugin for the Hyprland that is
+# installed now. Run after every Hyprland update, then log out and back in.
+#
+# Builds the hyprgrass commit that hyprgrass's hyprpm.toml pins to this exact
+# Hyprland commit - never the latest one, which tracks unreleased Hyprland.
+# Without a pin there is nothing to build yet; the old build stays put,
+# Hyprland refuses to load it, and ~/.config/hypr/config/touch.lua skips the
+# gestures until a pin lands upstream.
+#
+#   hyprgrass-rebuild        clone if needed, fetch, check out the pinned commit, build, install
+
+set -euo pipefail
+
+SRC="$HOME/.local/src/hyprgrass"
+DEST="$HOME/.local/lib/hyprland/libhyprgrass.so"
+
+die() { printf '%s\n' "$*" >&2; exit 1; }
+
+if [[ ! -d $SRC/.git ]]; then
+    git clone -q https://github.com/horriblename/hyprgrass "$SRC" || die "could not clone hyprgrass into $SRC"
+fi
+
+hypr_commit=$(Hyprland --version-json | jq -r .commit)
+[[ -n $hypr_commit && $hypr_commit != null ]] || die "could not read Hyprland's commit"
+
+git -C "$SRC" fetch -q origin
+
+# The pins live in the newest hyprpm.toml, not the one checked out.
+pin=$(git -C "$SRC" show origin/HEAD:hyprpm.toml \
+    | grep -F "\"$hypr_commit\"" | tail -1 \
+    | sed -E 's/.*"[0-9a-f]{40}", *"([0-9a-f]{40})".*/\1/')
+[[ $pin =~ ^[0-9a-f]{40}$ ]] \
+    || die "hyprgrass has no pin for Hyprland $hypr_commit yet; keeping the old build"
+
+printf 'Hyprland %s -> hyprgrass %s\n' "${hypr_commit:0:7}" "${pin:0:7}"
+
+git -C "$SRC" checkout -q "$pin"
+git -C "$SRC" submodule update -q --init --recursive
+
+rm -rf "$SRC/build"
+meson setup "$SRC/build" "$SRC" -Dbuildtype=release >/dev/null
+ninja -C "$SRC/build"
+
+install -Dm755 "$SRC/build/src/libhyprgrass.so" "$DEST"
+printf 'Installed %s. Log out and back in to load it.\n' "$DEST"

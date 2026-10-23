@@ -1,0 +1,8 @@
+[Unit]
+Description=Re-theme tmux when Noctalia renders a new palette
+
+[Path]
+PathChanged=%h/.config/tmux/themes/noctalia.conf
+
+[Install]
+WantedBy=default.target

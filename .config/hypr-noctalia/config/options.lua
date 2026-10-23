@@ -106,10 +106,10 @@ hl.config({
         -- Ghostty and Spotify rules in rules.lua carry the same 0.92 step.
         -- The `opaque` tag (SUPER + SHIFT + backslash) still forces 1.0.
         active_opacity   = 1.0,
-        inactive_opacity = 0.72,
+        inactive_opacity = 1.00,
         fullscreen_opacity = 1.0,
 
-        dim_inactive = true,
+        dim_inactive = false,
         dim_strength = 0.12,
 
         -- Master switch for blur. Noctalia's layer rule in rules.lua opts its
@@ -160,9 +160,9 @@ hl.config({
         focus_on_close = 1,
 
         touchpad = {
-            scroll_factor = 0.2,
+            scroll_factor = 0.5,
             natural_scroll = true,
-            disable_while_typing = false,
+            disable_while_typing = true,
 
             -- Button presses with 1, 2, or 3 fingers will be mapped to LMB, RMB, and MMB respectively. 
             -- This disables interpretation of clicks based on location on the touchpad.
