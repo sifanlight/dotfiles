@@ -150,11 +150,70 @@ end
 -- they have to be turned with it, or a tap lands in the wrong place. Both
 -- are pinned to the panel: left on auto they follow whichever monitor has
 -- focus, and a tap on the Surface moves the pointer on the external.
+--
+-- The pen's reported area (274.29 x 184.6 mm) is slightly too tall for the
+-- panel, so it landed up to ~1 mm low near the bottom edge. The active area
+-- was fitted from pen tap tests on 2026-10-23; x was already accurate.
+-- These are in the panel's native (landscape) frame.
+local PEN_SIZE          = { 274.2857142857143, 184.6153846153846 }  -- mm, as reported
+local PEN_AREA_SIZE     = { 274.29, 186.0 }                         -- mm
+local PEN_AREA_POSITION = { 0, -0.33 }                              -- mm
+
+-- Extra per-orientation correction in the rotated frame (mm, factor). The
+-- pen sits differently in the hand in portrait: it landed ~0.65 mm right of
+-- the tip there, fitted from a portrait tap test on 2026-10-23.
+local PEN_ROTATED_FIX = {
+    [0] = { shift = { -0.01, -0.27 }, scale = { 1.0010, 1.0022 } },  -- 3 landscape edge runs
+    [1] = { shift = { 0.47, 0 }, scale = { 1.0021, 1 } },
+}
+
+-- Hyprland rotates the pen through libinput's calibration matrix first and
+-- applies the active area afterwards, in the rotated frame (with the
+-- physical size swapped for 90/270). So the area has to be turned with the
+-- same matrix, or it squashes the pen in portrait. Same table as
+-- MATRICES in Hyprland's InputManager.hpp.
+local TRANSFORM_MATRICES = {
+    [0] = { 1, 0, 0, 0, 1, 0 },
+    [1] = { 0, -1, 1, 1, 0, 0 },
+    [2] = { -1, 0, 1, 0, -1, 1 },
+    [3] = { 0, 1, 0, -1, 0, 1 },
+    [4] = { -1, 0, 1, 0, 1, 0 },
+    [5] = { 0, 1, 0, 1, 0, 0 },
+    [6] = { 1, 0, 0, 0, -1, 1 },
+    [7] = { 0, -1, 1, -1, 0, 1 },
+}
+
+local function pen_area(transform)
+    local m = TRANSFORM_MATRICES[transform] or TRANSFORM_MATRICES[0]
+    local x0 = PEN_AREA_POSITION[1] / PEN_SIZE[1]
+    local y0 = PEN_AREA_POSITION[2] / PEN_SIZE[2]
+    local x1 = x0 + PEN_AREA_SIZE[1] / PEN_SIZE[1]
+    local y1 = y0 + PEN_AREA_SIZE[2] / PEN_SIZE[2]
+    local ax, ay = m[1] * x0 + m[2] * y0 + m[3], m[4] * x0 + m[5] * y0 + m[6]
+    local bx, by = m[1] * x1 + m[2] * y1 + m[3], m[4] * x1 + m[5] * y1 + m[6]
+    local w, h = PEN_SIZE[1], PEN_SIZE[2]
+    if transform % 2 == 1 then w, h = h, w end
+    local px, py = math.min(ax, bx), math.min(ay, by)
+    local pos  = { px * w, py * h }
+    local size = { math.abs(bx - ax) * w, math.abs(by - ay) * h }
+    local fix = PEN_ROTATED_FIX[transform]
+    if fix then
+        pos[1], pos[2] = pos[1] + fix.shift[1], pos[2] + fix.shift[2]
+        size[1], size[2] = size[1] * fix.scale[1], size[2] * fix.scale[2]
+    end
+    return pos, size
+end
+
 local function apply_input_transform(transform)
+    local area_position, area_size = pen_area(transform)
     pcall(hl.config, {
         input = {
             touchdevice = { output = INTERNAL, transform = transform },
-            tablet      = { output = INTERNAL, transform = transform },
+            tablet      = {
+                output = INTERNAL, transform = transform,
+                active_area_size = area_size,
+                active_area_position = area_position,
+            },
         },
     })
 end

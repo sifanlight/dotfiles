@@ -24,6 +24,12 @@ bootstrap scripts target the ASUS laptop and do not work here.
   connected.
 - **Palm rejection** (`etc/iptsd.d/90-palm.conf`): touch is ignored while the
   pen is near the screen.
+- **Pen calibration** (`config/monitors.lua`, `PEN_*`): the pen's reported
+  area is ~1% too tall, so it drifted up to ~1.7 mm near the bottom. The
+  tablet active area is corrected from tap tests, separately for landscape
+  and portrait, and turned with the rotation (Hyprland applies it after
+  rotating). Leftover error is ~0.3-0.5 mm; the remaining drift near the
+  bottom right is nonlinear and can't be fixed with the active area.
 - Smaller ones: vim keys (H/J/K/L) for moving/swapping/resizing windows,
   touchpad `disable_while_typing = true`, kwallet started from
   `startup.lua`, and tmux following Noctalia's palette (`tmux-noctalia.*`
