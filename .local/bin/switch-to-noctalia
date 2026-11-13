@@ -4,7 +4,6 @@ set -e
 echo "Switching to Noctalia desktop shell..."
 
 # 1. Disable legacy services
-systemctl --user disable --now hyprshell.service 2>/dev/null || true
 pkill -f waybar-auto 2>/dev/null || true
 killall waybar swaync nwg-dock-hyprland 2>/dev/null || true
 

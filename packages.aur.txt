@@ -14,7 +14,6 @@ bibata-cursor-theme
 
 # Referenced by the configs but missing from the original manifest
 rog-control-center
-hyprshell-bin
 sioyek-dev
 
 # GPU MUX switching (gfx script)

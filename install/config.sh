@@ -65,9 +65,6 @@ done
 if which systemctl >/dev/null 2>&1; then
     _info "Reloading systemd user daemon..."
     systemctl --user daemon-reload 2>/dev/null || true
-    if [[ -f "$DEST/.config/systemd/user/hyprshell.service" ]]; then
-        systemctl --user enable hyprshell.service 2>/dev/null || true
-    fi
 fi
 
 _done "Config and setting files were installed and linked!"

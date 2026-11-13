@@ -51,8 +51,8 @@ hl.config({
     },
 
     scrolling = {
-        explicit_column_widths = "0.5, 0.6, 0.9, 1.0",
-        column_width = 0.6,
+        explicit_column_widths = "0.5,  1.0",
+        column_width = 0.5,
 
         -- when a window is focused, require that at least 
         -- a given fraction of it is visible for focus to follow. [0.0 - 1.0]
@@ -99,14 +99,13 @@ hl.config({
         rounding = 0,
 	rounding_power = 2,
 
-        -- Tell the focused window apart from the rest. Unfocused windows drop
-        -- to 92% and Hyprland's blur fills in behind them; the focused one
-        -- stays solid. `opacity` is a multiplier on the window's own alpha,
-        -- so a window rule that sets `opacity` replaces both of these - the
-        -- Ghostty and Spotify rules in rules.lua carry the same 0.92 step.
-        -- The `opaque` tag (SUPER + SHIFT + backslash) still forces 1.0.
+        -- Unfocused windows keep full opacity and aren't dimmed. `opacity` is
+        -- a multiplier on the window's own alpha, so a window rule that sets
+        -- `opacity` replaces both of these - the Ghostty and Spotify rules in
+        -- rules.lua also use equal active/inactive values.
+        -- The `opaque` tag (SUPER + CTRL + backslash) still forces 1.0.
         active_opacity   = 1.0,
-        inactive_opacity = 1.00,
+        inactive_opacity = 1.0,
         fullscreen_opacity = 1.0,
 
         dim_inactive = false,
@@ -144,7 +143,7 @@ hl.config({
 
         -- English and Persian. "us" is first, so it is what every keyboard
         -- comes up in at boot and after a reload.
-        -- SUPER + ALT + SPACE cycles between them, see binds.lua.
+        -- SUPER + SPACE cycles between them, see binds.lua.
         kb_layout = "us,ir",
 
         -- 0: disabled
@@ -243,7 +242,7 @@ hl.config({
 
     gestures = {
         workspace_swipe_distance = 1000,
-        workspace_swipe_min_speed_to_force = 1000,
+        workspace_swipe_min_speed_to_force = 200, -- 0.57 caps this at 200
         workspace_swipe_direction_lock = false,
         workspace_swipe_create_new = false,
         workspace_swipe_cancel_ratio = 0.1,

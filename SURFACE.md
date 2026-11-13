@@ -1,7 +1,7 @@
 # surface branch
 
 `main` as it runs on a Surface Pro 9 (Intel only, linux-surface kernel,
-Hyprland 0.56 Lua config + Noctalia). Copy files by hand; the install and
+Hyprland 0.57 Lua config + Noctalia). Copy files by hand; the install and
 bootstrap scripts target the ASUS laptop and do not work here.
 
 `.config/hypr-noctalia/` is installed as `~/.config/hypr/`, and
@@ -41,6 +41,8 @@ bootstrap scripts target the ASUS laptop and do not work here.
 sudo pacman -S --needed squeekboard iptsd meson ninja glm
 sudo cp etc/iptsd.d/90-palm.conf /etc/iptsd.d/
 systemctl --user enable --now tmux-noctalia.path
+systemctl --user mask swaync.service   # Noctalia owns notifications
+sudo pacman -Rns hyprshell             # not used here
 hyprgrass-rebuild    # builds the plugin into ~/.local/lib/hyprland
 ```
 

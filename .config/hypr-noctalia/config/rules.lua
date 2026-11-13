@@ -42,19 +42,11 @@ hl.window_rule({ stay_focused = true, match = { class = "xfce-polkit" }})
 hl.window_rule({ stay_focused = true, match = { title = "^(Rename device)$", class = "blueman-manager" }})
 
 
--- Tags, toggled per window from binds.lua (SUPER + backslash and
--- SUPER + SHIFT + backslash). Tag rules re-evaluate on toggle, so these take
--- effect and undo immediately on the focused window.
-hl.window_rule({
-    name = "Tag: borderless",
-    match = { tag = "borderless" },
-    -- Borders are on by default (general.border_size in options.lua), so
-    -- the toggle takes one away. Colors come from general.col.*_border,
-    -- which noctalia.lua overrides with the wallpaper palette when the
-    -- Noctalia "hyprland" template is on.
-    border_size = 2,
-})
-
+-- Tags, toggled per window from binds.lua (SUPER + backslash,
+-- SUPER + SHIFT + backslash and SUPER + CTRL + backslash). Tag rules
+-- re-evaluate on toggle, so these take effect and undo immediately on the
+-- focused window. The border tags sit at the end of this file so they beat
+-- the Ghostty border rule.
 hl.window_rule({
     name = "Tag: opaque",
     match = { tag = "opaque" },
@@ -159,9 +151,22 @@ hl.window_rule({
     -- 1 is a multiplier on the window's own alpha, not a force-opaque:
     -- Ghostty's background-opacity (0.7, matching the Noctalia bar) still
     -- shows through, and Hyprland's blur fills in behind it. Two values are
-    -- active and inactive; the second mirrors decoration.inactive_opacity
-    -- in options.lua, because a rule's `opacity` replaces both globals.
-    opacity = "1 0.92",
+    -- active and inactive; both are 1 so unfocused windows don't fade.
+    opacity = "1 1",
+})
+
+hl.window_rule({
+    name = "Ghostty border",
+    match = {
+        class = "com.mitchellh.ghostty|ghostty"
+    },
+
+    -- general.border_size is 0, so only terminals get a border. Colors are
+    -- set here instead of taken from general.col.*_border, because Noctalia
+    -- sets those to a bright primary and solid black. This uses the same
+    -- light grey at low alpha: active first, then inactive.
+    border_size = 2,
+    border_color = "rgba(c4c6cecc) rgba(c4c6ce1a)",
 })
 
 hl.window_rule({
@@ -222,9 +227,8 @@ hl.window_rule({
     -- shows an opaque #121212 - so the alpha has to come from the compositor.
     -- This dims album art and text along with the background, which is why it
     -- sits higher than Ghostty's 0.7. Hyprland blurs behind it on its own.
-    -- Second value is unfocused: 0.8 stepped down by the same 0.92 as
-    -- decoration.inactive_opacity in options.lua.
-    opacity = "0.8 0.74",
+    -- Second value is unfocused; kept equal so it doesn't fade on blur.
+    opacity = "0.8 0.8",
 })
 
 hl.window_rule({
@@ -267,6 +271,22 @@ hl.window_rule({
     
     float = true,
     no_initial_focus = true
+})
+
+hl.window_rule({
+    name = "Tag: borderless",
+    match = { tag = "borderless" },
+    -- Takes the border off a terminal (see "Ghostty border").
+    border_size = 0,
+})
+
+hl.window_rule({
+    name = "Tag: bordered",
+    match = { tag = "bordered" },
+    -- general.border_size is 0, so this gives any window the same border
+    -- terminals get by default.
+    border_size = 2,
+    border_color = "rgba(c4c6cecc) rgba(c4c6ce1a)",
 })
 
 hl.window_rule({

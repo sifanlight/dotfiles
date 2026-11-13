@@ -60,6 +60,11 @@ local EXTERNAL_PLACEMENT = "auto-left"
 -- out for a panel that belongs in the row. One panel per side: two "up"
 -- panels would be stacked on the same spot.
 --
+-- beside = "left" or "right" on an "up"/"down" panel pulls the row out from
+-- under it: the row panels sit next to that panel instead, on that side,
+-- each centred on its height. For a desk where the externals stand beside
+-- the big screen rather than beside the laptop.
+--
 -- Two of these are the same model, so the model string alone is ambiguous:
 -- both panels would match the first entry, tie on rank, and land in
 -- whatever order the sort happened to leave them. The serial is the only
@@ -70,7 +75,7 @@ local DESK = {
     { edid = "HNAY802838", transform = 0, workspaces = { 1, 2 , 3}, position = "up" },  -- Samsung Odyssey G5 (HDMI-A-1), above
     -- Its EDID carries no serial string, so the model has to do.
     -- 4 and 5 are left unclaimed, so they fall back to the internal panel.
-    { edid = "LEN P27h-10", transform = 0, workspaces = { 1, 2, 3 }, position = "up" },  -- Lenovo P27h-10 (DP-4), above
+    { edid = "LEN P27h-10", transform = 0, workspaces = { 1, 2, 3 }, position = "up", beside = "right" },  -- Lenovo P27h-10 (DP-4), above; Dell to its right
 }
 
 -- Surface Pro 9 panel is 2880x1920 native, run at scale 1.88.
@@ -200,6 +205,19 @@ local function pen_area(transform)
     if fix then
         pos[1], pos[2] = pos[1] + fix.shift[1], pos[2] + fix.shift[2]
         size[1], size[2] = size[1] * fix.scale[1], size[2] * fix.scale[2]
+    end
+    -- Hyprland 0.57 rejects a negative active_area_position (range 0..5000),
+    -- which drops the whole tablet block. Clamp to 0 and shrink that axis so
+    -- the error is split evenly between both edges instead of all at one:
+    -- size' = T*size/(T - 2*pos), max error |pos|/size of the axis
+    -- (~0.3 mm here). T is the reported pen size in this frame.
+    local extent = { w, h }
+    for i = 1, 2 do
+        if pos[i] < 0 then
+            local T = extent[i]
+            size[i] = T * size[i] / (T - 2 * pos[i])
+            pos[i] = 0
+        end
     end
     return pos, size
 end
@@ -394,6 +412,7 @@ local function layout(externals, internal_lit)
     local items = {}
     local pos = {}
     local iw, ih = internal_size()
+    local anchor
 
     for i, name in ipairs(externals) do
         local nw, nh = native_size(name)
@@ -410,10 +429,14 @@ local function layout(externals, internal_lit)
             local x = math.floor(iw / 2 - w / 2)
             local y = (side == "up") and -h or ih
             pos[name] = x .. "x" .. y
+            if entry.beside then
+                anchor = { x = x, y = y, w = w, h = h, side = entry.beside }
+            end
         else
             items[#items + 1] = {
                 name  = name,
                 width = w,
+                height = h,
                 -- Listed panels sort above every unlisted one, so a monitor
                 -- nobody has described lands on the far left rather than
                 -- shouldering into the middle of the desk.
@@ -424,7 +447,22 @@ local function layout(externals, internal_lit)
 
     table.sort(items, function(a, b) return a.rank < b.rank end)
 
-    if EXTERNAL_PLACEMENT == "auto-right" then
+    if anchor then
+        local function y_of(item) return anchor.y + math.floor((anchor.h - item.height) / 2) end
+        if anchor.side == "left" then
+            local x = anchor.x
+            for i = #items, 1, -1 do
+                x = x - items[i].width
+                pos[items[i].name] = x .. "x" .. y_of(items[i])
+            end
+        else
+            local x = anchor.x + anchor.w
+            for _, item in ipairs(items) do
+                pos[item.name] = x .. "x" .. y_of(item)
+                x = x + item.width
+            end
+        end
+    elseif EXTERNAL_PLACEMENT == "auto-right" then
         local x = internal_lit and iw or 0
         for _, item in ipairs(items) do
             pos[item.name] = x .. "x0"

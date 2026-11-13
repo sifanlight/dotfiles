@@ -165,8 +165,7 @@ hl.bind("SUPER + SHIFT + O", hl.dsp.window.move({ out_of_group = true})) -- Move
 
 -- Noctalia IPC controls
 local noctalia_msg = "noctalia msg "
-hl.bind("SUPER + SPACE",         run(noctalia_msg .. "panel-toggle launcher"))       -- Application launcher
-hl.bind("SUPER + R",             run(noctalia_msg .. "panel-toggle launcher"))       -- Application launcher alias
+hl.bind("SUPER + R",             run(noctalia_msg .. "panel-toggle launcher"))       -- Application launcher
 -- Control center is on SUPER + T only. SUPER + S belongs to the special
 -- workspace further down; binding both fired the two at once.
 hl.bind("SUPER + T",             run(noctalia_msg .. "panel-toggle control-center")) -- Control center & notifications
@@ -186,7 +185,7 @@ hl.bind("SUPER + CTRL + Y",      run(noctalia_msg .. "wallpaper-next"))         
 hl.bind("SUPER + CTRL + SHIFT + Y", run(noctalia_msg .. "wallpaper-previous"))       -- Previous wallpaper
 
 -- Misc bindings 
-hl.bind("SUPER + ALT + SPACE",    run(noctalia_msg .. "keyboard-layout-cycle"))       -- English <-> Persian
+hl.bind("SUPER + SPACE",          run(noctalia_msg .. "keyboard-layout-cycle"))       -- English <-> Persian
 hl.bind("SUPER + ALT + M",        run_script("monitors"))                             -- Monitor profile picker (rofi)
 hl.bind("SUPER + CTRL + M",       run_script("monitors next"))                        -- Cycle monitor layout
 hl.bind("SUPER + CTRL + SHIFT + M", run_script("monitors rescue"))                    -- Rescue: laptop panel only
@@ -255,7 +254,8 @@ end
 -- would set / unset. What each tag does is defined by the matching
 -- `match = { tag = ... }` rules in rules.lua.
 hl.bind("SUPER + backslash",         hl.dsp.window.tag({ tag = "borderless" }))
-hl.bind("SUPER + SHIFT + backslash", hl.dsp.window.tag({ tag = "opaque" }))
+hl.bind("SUPER + SHIFT + backslash", hl.dsp.window.tag({ tag = "bordered" }))
+hl.bind("SUPER + CTRL + backslash",  hl.dsp.window.tag({ tag = "opaque" }))
 
 -- Special workspace
 hl.bind("SUPER + S",         hl.dsp.workspace.toggle_special("magic"))
